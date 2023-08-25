@@ -1,0 +1,17 @@
+{
+	"name": "metabeem-relay",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"dev": "node src/MetabeemRelayNode.js"
+	},
+	"type": "module",
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"chaintalk-relay": "^1.0.0",
+		"minimist": "^1.2.8",
+		"uint8arrays": "^4.0.6"
+	}
+}
