@@ -30,17 +30,17 @@ export class RpcMessage
 			body : body
 	} = undefined )
 	{
-		this._type	= undefined;
-		this._version	= undefined;
-		this._service	= undefined;
-		this._method	= undefined;
-		this._body	= undefined;
+		this.type	= undefined;
+		this.version	= undefined;
+		this.service	= undefined;
+		this.method	= undefined;
+		this.body	= undefined;
 
-		this.type	= type;
-		this.version	= version;
-		this.service	= service;
-		this.method	= method;
-		this.body	= body;
+		this.setType( type );
+		this.setVersion( version );
+		this.setService( service );
+		this.setMethod( method );
+		this.setBody( body );
 	}
 
 	static buildStore({
@@ -59,63 +59,63 @@ export class RpcMessage
 		});
 	}
 
-	get type()
+	getType()
 	{
-		return this._type;
+		return this.type;
 	}
-	set type( type )
+	setType( type )
 	{
 		if ( ! Object.values( RpcMessageTypes ).includes( type ) )
 		{
 			return false;
 		}
 
-		this._type = type;
+		this.type = type;
 		return this;
 	}
 
-	get version()
+	getVersion()
 	{
-		return this._version;
+		return this.version;
 	}
-	set version( version )
+	setVersion( version )
 	{
-		this._version = version;
+		this.version = version;
 		return this;
 	}
 
-	get service()
+	getService()
 	{
-		return this._service;
+		return this.service;
 	}
-	set service( service )
+	setService( service )
 	{
-		this._service = service;
+		this.service = service;
 		return this;
 	}
 
-	get method()
+	getMethod()
 	{
-		return this._method;
+		return this.method;
 	}
-	set method( method )
+	setMethod( method )
 	{
-		this._method = method;
+		this.method = method;
 		return this;
 	}
 
-	get body()
+	getBody()
 	{
-		return this._body;
+		return this.body;
 	}
-	set body( body )
+	setBody( body )
 	{
 		if ( ! ( body instanceof MessageBody ) )
 		{
 			return false;
 		}
 
-		this._body = body;
+		this.body = body;
 		return this;
 	}
 }

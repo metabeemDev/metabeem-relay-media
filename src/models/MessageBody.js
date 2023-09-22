@@ -13,13 +13,13 @@ export class MessageBody
 		     sig : sig
 	} = undefined )
 	{
-		this._wallet	= undefined;
-		this._data	= undefined;
-		this._sig	= undefined;
+		this.wallet	= undefined;
+		this.data	= undefined;
+		this.sig	= undefined;
 
-		this.wallet	= wallet;
-		this.data	= data;
-		this.sig	= sig;
+		this.setWallet( wallet );
+		this.setData( data );
+		this.setSig( sig );
 	}
 
 	/**
@@ -41,43 +41,43 @@ export class MessageBody
 		});
 	}
 
-	get wallet()
+	getWallet()
 	{
-		return this._wallet;
+		return this.wallet;
 	}
-	set wallet( wallet )
+	setWallet( wallet )
 	{
 		if ( ! EtherWallet.isValidAddress( wallet ) )
 		{
 			return false;
 		}
 
-		this._wallet = wallet;
+		this.wallet = wallet;
 		return this;
 	}
 
-	get data()
+	getData()
 	{
-		return this._data;
+		return this.data;
 	}
-	set data( data )
+	setData( data )
 	{
-		this._data = data;
+		this.data = data;
 		return this;
 	}
 
-	get sig()
+	getSig()
 	{
-		return this._sig;
+		return this.sig;
 	}
-	set sig( sig )
+	setSig( sig )
 	{
 		if ( ! EtherWallet.isValidSignatureString( sig ) )
 		{
 			return false;
 		}
 
-		this._sig = sig;
+		this.sig = sig;
 		return this;
 	}
 }

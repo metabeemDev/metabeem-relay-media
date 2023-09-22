@@ -52,12 +52,6 @@ export class StoreService
 				{
 					return reject( `invalid rpcMessage` );
 				}
-
-				//		this._type	= undefined;
-				// 		this._version	= undefined;
-				// 		this._service	= undefined;
-				// 		this._method	= undefined;
-				// 		this._body	= undefined;
 				if ( 'store' !== rpcMessage.type )
 				{
 					return reject( `invalid rpcMessage.type, not store` );

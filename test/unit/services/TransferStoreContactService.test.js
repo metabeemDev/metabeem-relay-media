@@ -6,6 +6,7 @@ import { RpcMessage } from "../../../src/models/RpcMessage";
 import { TransferService } from "../../../src/services/TransferService";
 import { SchemaUtil } from "chaintalk-store";
 import { DatabaseConnection } from "chaintalk-store";
+import { TestUtil } from "chaintalk-utils";
 
 
 /**
@@ -82,7 +83,7 @@ describe( "TransferStoreContactService", () =>
 			const result = await transferService.execute( rpcMessage );
 			expect( result ).toBeDefined();
 
-			console.log( result );
+			//console.log( result );
 			//    {
 			//       timestamp: 1695202688533,
 			//       hash: '0x908c140576ce9e3395f9e586d766770b14b4497b0e06bd38a159a4fa2a6867ba',
@@ -101,7 +102,7 @@ describe( "TransferStoreContactService", () =>
 			//     }
 
 			//	wait for a while
-			//await TestUtil.sleep(5 * 1000 );
+			await TestUtil.sleep(5 * 1000 );
 
 		}, 60 * 10e3 );
 	} );

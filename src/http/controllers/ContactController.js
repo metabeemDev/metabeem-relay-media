@@ -19,7 +19,7 @@ export class ContactController
 		}
 		catch ( err )
 		{
-			res.send( NetworkUtil.getResponseObject( null, { error : err } ) );
+			res.status( 400 ).send( NetworkUtil.getResponseObject( null, { error : err } ) );
 		}
 	}
 }
@@ -60,7 +60,6 @@ export class ContactControllerPromise
 						sig : req.body.sig
 					})
 				});
-
 				const result = await transferService.execute( rpcMessage );
 				resolve( result );
 			}

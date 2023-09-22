@@ -46,11 +46,11 @@ export function appRoutes( app )
 	//
 	//	index
 	//
-	app.all( '/', IndexController.index );
+	app.get( '/', IndexController.index );
 
 
 	//
 	//	contact
 	//
-	app.all( '/v1/contact/add', ContactController.add );
+	app.post( '/v1/contact/add', ContactController.add );
 }

@@ -10,13 +10,13 @@ export class NetworkUtil
 	 *	@param	{object}	oOptions
 	 *	@return	{{version: number, data: *}}
 	 */
-	static getResponseObject( oData, oOptions = null )
+	static getResponseObject( oData, oOptions = undefined )
 	{
 		return {
 			version	: 1.0,					//	version
 			ts	: new Date().getTime(),			//	timestamp UTC
-			tu	: oOptions ? oOptions.tu : 0,		//	time used
-			error	: oOptions ? oOptions.error : null,	//	error description
+			tu	: ( oOptions && oOptions.tu ) ? oOptions.tu : 0,		//	time used
+			error	: ( oOptions && oOptions.error ) ? oOptions.error : null,	//	error description
 			data	: oData,				//	data
 		};
 	}
