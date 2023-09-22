@@ -1,8 +1,14 @@
 import minimist from "minimist";
-import { RelayNode } from "chaintalk-relay";
+//import { RelayNode } from "chaintalk-relay";
 const argv = minimist( process.argv.slice( 2 ) );
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { bootstrappers } from './bootstrappers.js';
+import { runHttpServer } from "./http/http.js";
+
+async function testHttpServer()
+{
+	await runHttpServer();
+}
 
 async function testRelayNode()
 {
@@ -67,4 +73,6 @@ async function testRelayNode()
 	}, 3e3 );
 }
 
-testRelayNode().then();
+
+testHttpServer().then();
+//testRelayNode().then();
