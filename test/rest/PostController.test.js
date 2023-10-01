@@ -10,7 +10,7 @@ import { last } from "lodash";
 const server = runHttpServer();
 
 
-describe( 'ContactController', () =>
+describe( 'PostController', () =>
 {
 	//
 	//	create a wallet by mnemonic
@@ -18,6 +18,10 @@ describe( 'ContactController', () =>
 	const mnemonic = 'olympic cradle tragic crucial exit annual silly cloth scale fine gesture ancient';
 	const walletObj = EtherWallet.createWalletFromMnemonic( mnemonic );
 	let lastOneAddress;
+	let savedPost;
+
+	const statisticKeys = SchemaUtil.getPrefixedKeys( `post`, 'statistic' );
+	const exceptedKeys = Array.isArray( statisticKeys ) ? statisticKeys : [];
 
 
 	beforeAll( async () =>
@@ -46,60 +50,57 @@ describe( 'ContactController', () =>
 		} );
 	} );
 
-	test( 'it should response the GET method by path /', async () =>
-	{
-		const response = await request( app ).get( '/' );
-		expect( response ).toBeDefined();
-		expect( response ).toHaveProperty( 'statusCode' );
-		expect( response ).toHaveProperty( '_body' );
-		expect( response.statusCode ).toBe( 200 );
-		expect( response._body ).toBeDefined();
-		expect( response._body ).toHaveProperty( 'version' );
-		expect( response._body ).toHaveProperty( 'ts' );
-		expect( response._body ).toHaveProperty( 'tu' );
-		expect( response._body ).toHaveProperty( 'error' );
-		expect( response._body ).toHaveProperty( 'data' );
-	} );
-
-
 	describe( "Add record", () =>
 	{
-		it( "it should response the POST method by path /v1/contact/add", async () =>
+		it( "it should response the POST method by path /v1/post/add", async () =>
 		{
 			//	...
 			lastOneAddress = EtherWallet.createWalletFromMnemonic().address;
 
 			//
-			//	create a new contact with ether signature
+			//	create a new post with ether signature
 			//
-			let contact = {
+			let newRecord = {
 				timestamp : new Date().getTime(),
 				hash : '',
 				version : '1.0.0',
 				deleted : SchemaUtil.createHexStringObjectIdFromTime( 0 ),
 				wallet : walletObj.address,
-				address : lastOneAddress,
 				sig : ``,
-				name : `Sam`,
-				avatar : 'https://avatars.githubusercontent.com/u/142800322?v=4',
-				remark : 'no remark',
-				createdAt : new Date(),
-				updatedAt : new Date()
+				authorName : 'XING',
+				authorAvatar : 'https://avatars.githubusercontent.com/u/142800322?v=4',
+				body : 'Hello 1',
+				pictures : [],
+				videos : [],
+				bitcoinPrice : '25888',
+				statisticView : 0,
+				statisticRepost : 0,
+				statisticQuote : 0,
+				statisticLike : 0,
+				statisticFavorite : 0,
+				statisticReply : 0,
+				remark : 'no ...',
+				createdAt: new Date(),
+				updatedAt: new Date()
 			};
-			contact.sig = await Web3Signer.signObject( walletObj.privateKey, contact );
-			contact.hash = await Web3Digester.hashObject( contact );
-			expect( contact.sig ).toBeDefined();
-			expect( typeof contact.sig ).toBe( 'string' );
-			expect( contact.sig.length ).toBeGreaterThanOrEqual( 0 );
+			newRecord.sig = await Web3Signer.signObject( walletObj.privateKey, newRecord, exceptedKeys );
+			newRecord.hash = await Web3Digester.hashObject( newRecord );
+			expect( newRecord.sig ).toBeDefined();
+			expect( typeof newRecord.sig ).toBe( 'string' );
+			expect( newRecord.sig.length ).toBeGreaterThanOrEqual( 0 );
 
 			const response = await request( app )
-				.post( '/v1/contact/add' )
+				.post( '/v1/post/add' )
 				.send( {
-					wallet : walletObj.address, data : contact, sig : contact.sig
+					wallet : walletObj.address, data : newRecord, sig : newRecord.sig
 				} );
 			expect( response ).toBeDefined();
 			expect( response ).toHaveProperty( 'statusCode' );
 			expect( response ).toHaveProperty( '_body' );
+			if ( 200 !== response.statusCode )
+			{
+				console.log( response );
+			}
 			expect( response.statusCode ).toBe( 200 );
 			expect( response._body ).toBeDefined();
 			expect( response._body ).toHaveProperty( 'version' );
@@ -109,7 +110,12 @@ describe( 'ContactController', () =>
 			expect( response._body ).toHaveProperty( 'data' );
 			expect( response._body.data ).toBeDefined();
 			expect( response._body.data ).toHaveProperty( 'hash' );
-			expect( response._body.data.hash ).toBe( contact.hash );
+			expect( response._body.data ).toHaveProperty( 'sig' );
+			expect( response._body.data.hash ).toBe( newRecord.hash );
+			expect( response._body.data.sig ).toBe( newRecord.sig );
+
+			//	...
+			savedPost = response._body.data;
 
 			//	wait for a while
 			await TestUtil.sleep( 5 * 1000 );
@@ -121,11 +127,15 @@ describe( 'ContactController', () =>
 	{
 		it( "should return a record by wallet and address from database", async () =>
 		{
+			expect( savedPost ).toBeDefined();
+			expect( savedPost ).toHaveProperty( 'hash' );
+			expect( SchemaUtil.isValidKeccak256Hash( savedPost.hash ) ).toBeTruthy();
+
 			const response = await request( app )
-				.post( '/v1/contact/queryOne' )
+				.post( '/v1/post/queryOne' )
 				.send( {
 					wallet : walletObj.address,
-					data : { by : 'walletAndAddress', address : lastOneAddress },
+					data : { by : 'walletAndHash', hash : savedPost.hash },
 					sig : ''
 				} );
 			//
@@ -165,8 +175,10 @@ describe( 'ContactController', () =>
 			expect( response._body.data ).toBeDefined();
 			expect( response._body.data ).toHaveProperty( 'wallet' );
 			expect( response._body.data ).toHaveProperty( 'hash' );
+			expect( response._body.data ).toHaveProperty( 'sig' );
 			expect( response._body.data.wallet ).toBe( walletObj.address );
-			expect( response._body.data.address ).toBe( lastOneAddress );
+			expect( response._body.data.hash ).toBe( savedPost.hash );
+			expect( response._body.data.sig ).toBe( savedPost.sig );
 
 		}, 60 * 10e3 );
 	} );
@@ -176,10 +188,10 @@ describe( 'ContactController', () =>
 		it( "should return a list of records from database", async () =>
 		{
 			const response = await request( app )
-				.post( '/v1/contact/queryList' )
+				.post( '/v1/post/queryList' )
 				.send( {
 					wallet : walletObj.address,
-					data : { by : 'walletAndAddress', address : lastOneAddress },
+					data : { by : 'wallet' },
 					sig : ''
 				} );
 			//
@@ -242,9 +254,7 @@ describe( 'ContactController', () =>
 					expect( item ).toBeDefined();
 					expect( item ).toHaveProperty( '_id' );
 					expect( item ).toHaveProperty( 'wallet' );
-					expect( item ).toHaveProperty( 'address' );
 					expect( item.wallet ).toBe( walletObj.address );
-					expect( item.address ).toBe( lastOneAddress );
 				}
 			}
 
@@ -264,32 +274,41 @@ describe( 'ContactController', () =>
 				const NoStr = Number( i ).toString().padStart( 2, '0' );
 
 				//
-				//	create a new contact with ether signature
+				//	create a new post with ether signature
 				//
-				let contact = {
+				let newRecord = {
 					timestamp : new Date().getTime(),
 					hash : '',
 					version : '1.0.0',
 					deleted : SchemaUtil.createHexStringObjectIdFromTime( 0 ),
 					wallet : walletObj.address,
-					address : lastOneAddress,
 					sig : ``,
-					name : `Sam`,
-					avatar : 'https://avatars.githubusercontent.com/u/142800322?v=4',
-					remark : `no remark ${ NoStr }`,
-					createdAt : new Date(),
-					updatedAt : new Date()
+					authorName : 'XING',
+					authorAvatar : 'https://avatars.githubusercontent.com/u/142800322?v=4',
+					body : 'Hello 1',
+					pictures : [],
+					videos : [],
+					bitcoinPrice : '25888',
+					statisticView : 0,
+					statisticRepost : 0,
+					statisticQuote : 0,
+					statisticLike : 0,
+					statisticFavorite : 0,
+					statisticReply : 0,
+					remark : 'no ...',
+					createdAt: new Date(),
+					updatedAt: new Date()
 				};
-				contact.sig = await Web3Signer.signObject( walletObj.privateKey, contact );
-				contact.hash = await Web3Digester.hashObject( contact );
-				expect( contact.sig ).toBeDefined();
-				expect( typeof contact.sig ).toBe( 'string' );
-				expect( contact.sig.length ).toBeGreaterThanOrEqual( 0 );
+				newRecord.sig = await Web3Signer.signObject( walletObj.privateKey, newRecord, exceptedKeys );
+				newRecord.hash = await Web3Digester.hashObject( newRecord );
+				expect( newRecord.sig ).toBeDefined();
+				expect( typeof newRecord.sig ).toBe( 'string' );
+				expect( newRecord.sig.length ).toBeGreaterThanOrEqual( 0 );
 
 				const response = await request( app )
-					.post( '/v1/contact/add' )
+					.post( '/v1/post/add' )
 					.send( {
-						wallet : walletObj.address, data : contact, sig : contact.sig
+						wallet : walletObj.address, data : newRecord, sig : newRecord.sig
 					} );
 				//console.log( response );
 				expect( response ).toBeDefined();
@@ -304,7 +323,10 @@ describe( 'ContactController', () =>
 				expect( response._body ).toHaveProperty( 'data' );
 				expect( response._body.data ).toBeDefined();
 				expect( response._body.data ).toHaveProperty( 'hash' );
-				expect( response._body.data.hash ).toBe( contact.hash );
+				expect( response._body.data.hash ).toBe( newRecord.hash );
+
+				//	...
+				savedPost = response._body.data;
 			}
 
 			//
@@ -313,10 +335,10 @@ describe( 'ContactController', () =>
 			for ( let page = 1; page <= 10; page++ )
 			{
 				const response = await request( app )
-					.post( '/v1/contact/queryList' )
+					.post( '/v1/post/queryList' )
 					.send( {
 						wallet : walletObj.address,
-						data : { by : 'walletAndAddress' },
+						data : { by : 'wallet' },
 						sig : '',
 						options : {
 							pageNo : page,
@@ -353,251 +375,41 @@ describe( 'ContactController', () =>
 	{
 		it( "should update a record by wallet and address from database", async () =>
 		{
-			let contactToBeUpdated = {
+			let toBeUpdated = {
 				wallet : walletObj.address,
 				address : lastOneAddress,
 				name : `name-${ new Date().toLocaleString() }`,
 				avatar : `https://avatar-${ new Date().toLocaleString() }`,
 				remark : `remark .... ${ new Date().toLocaleString() }`,
 			};
-			contactToBeUpdated.sig = await Web3Signer.signObject( walletObj.privateKey, contactToBeUpdated );
-			expect( contactToBeUpdated.sig ).toBeDefined();
-			expect( typeof contactToBeUpdated.sig ).toBe( 'string' );
-			expect( contactToBeUpdated.sig.length ).toBeGreaterThanOrEqual( 0 );
+			toBeUpdated.sig = await Web3Signer.signObject( walletObj.privateKey, toBeUpdated );
+			expect( toBeUpdated.sig ).toBeDefined();
+			expect( typeof toBeUpdated.sig ).toBe( 'string' );
+			expect( toBeUpdated.sig.length ).toBeGreaterThanOrEqual( 0 );
 
 			//	...
-			const requiredKeys = SchemaUtil.getRequiredKeys( `contact` );
+			const requiredKeys = SchemaUtil.getRequiredKeys( `post` );
 			expect( Array.isArray( requiredKeys ) ).toBeTruthy();
 
 			const updateResponse = await request( app )
-				.post( '/v1/contact/update' )
+				.post( '/v1/post/update' )
 				.send( {
 					wallet : walletObj.address,
-					data : contactToBeUpdated,
-					sig : contactToBeUpdated.sig
-				} );
-			expect( updateResponse ).toBeDefined();
-			expect( updateResponse ).toHaveProperty( 'statusCode' );
-			expect( updateResponse ).toHaveProperty( '_body' );
-			if ( 200 !== updateResponse.statusCode )
-			{
-				console.log( updateResponse );
-			}
-			expect( updateResponse.statusCode ).toBe( 200 );
-			expect( updateResponse._body ).toBeDefined();
-			expect( updateResponse._body ).toHaveProperty( 'version' );
-			expect( updateResponse._body ).toHaveProperty( 'ts' );
-			expect( updateResponse._body ).toHaveProperty( 'tu' );
-			expect( updateResponse._body ).toHaveProperty( 'error' );
-			expect( updateResponse._body ).toHaveProperty( 'data' );
-			expect( updateResponse._body.data ).toBeDefined();
-			if ( requiredKeys &&
-			     updateResponse &&
-			     updateResponse._body &&
-			     updateResponse._body.data )
-			{
-				const updatedContact = updateResponse._body.data;
-				for ( const key of requiredKeys )
-				{
-					expect( updatedContact ).toHaveProperty( key );
-				}
-				expect( SchemaUtil.createHexStringObjectIdFromTime( 0 ) === updatedContact.deleted ).toBeTruthy();
-				expect( updatedContact.sig ).toBe( contactToBeUpdated.sig );
-				expect( updatedContact.name ).toBe( contactToBeUpdated.name );
-				expect( updatedContact.avatar ).toBe( contactToBeUpdated.avatar );
-				expect( updatedContact.remark ).toBe( contactToBeUpdated.remark );
-			}
-
-			//	...
-			const queryOneResponse = await request( app )
-				.post( '/v1/contact/queryOne' )
-				.send( {
-					wallet : walletObj.address,
-					data : { by : 'walletAndAddress', address : lastOneAddress },
-					sig : ''
-				} );
-			expect( queryOneResponse ).toBeDefined();
-			expect( queryOneResponse ).toHaveProperty( 'statusCode' );
-			expect( queryOneResponse ).toHaveProperty( '_body' );
-			expect( queryOneResponse.statusCode ).toBe( 200 );
-			expect( queryOneResponse._body ).toBeDefined();
-			expect( queryOneResponse._body ).toHaveProperty( 'version' );
-			expect( queryOneResponse._body ).toHaveProperty( 'ts' );
-			expect( queryOneResponse._body ).toHaveProperty( 'tu' );
-			expect( queryOneResponse._body ).toHaveProperty( 'error' );
-			expect( queryOneResponse._body ).toHaveProperty( 'data' );
-			expect( queryOneResponse._body.data ).toBeDefined();
-			expect( queryOneResponse._body.data ).toHaveProperty( 'wallet' );
-			expect( queryOneResponse._body.data ).toHaveProperty( 'hash' );
-			expect( queryOneResponse._body.data.wallet ).toBe( walletObj.address );
-			expect( queryOneResponse._body.data.address ).toBe( lastOneAddress );
-			if ( requiredKeys &&
-			     queryOneResponse &&
-			     queryOneResponse._body &&
-			     queryOneResponse._body.data )
-			{
-				const findContactAgain = queryOneResponse._body.data;
-				for ( const key of requiredKeys )
-				{
-					expect( findContactAgain ).toHaveProperty( key );
-				}
-
-				expect( SchemaUtil.createHexStringObjectIdFromTime( 0 ) === findContactAgain.deleted ).toBeTruthy();
-				expect( findContactAgain.sig ).toBe( contactToBeUpdated.sig );
-				expect( findContactAgain.name ).toBe( contactToBeUpdated.name );
-				expect( findContactAgain.avatar ).toBe( contactToBeUpdated.avatar );
-				expect( findContactAgain.remark ).toBe( contactToBeUpdated.remark );
-			}
-
-			//	wait for a while
-			await TestUtil.sleep(5 * 1000 );
-
-		}, 60 * 10e3 );
-
-		it( "should only be able to update keys that are allowed to be updated", async () =>
-		{
-			let contactToBeUpdated = {
-				wallet : walletObj.address,
-				address : lastOneAddress,
-				name : `name-${ new Date().toLocaleString() }`,
-				avatar : `https://avatar-${ new Date().toLocaleString() }`,
-				remark : `remark .... ${ new Date().toLocaleString() }`,
-				//
-				//	********
-				//	deleted key is not allowed to be updated, will be ignored ...
-				//
-				deleted : SchemaUtil.createHexStringObjectIdFromTime( 1 ),
-			};
-			contactToBeUpdated.sig = await Web3Signer.signObject( walletObj.privateKey, contactToBeUpdated );
-			expect( contactToBeUpdated.sig ).toBeDefined();
-			expect( typeof contactToBeUpdated.sig ).toBe( 'string' );
-			expect( contactToBeUpdated.sig.length ).toBeGreaterThanOrEqual( 0 );
-
-			//	...
-			const requiredKeys = SchemaUtil.getRequiredKeys( `contact` );
-			expect( Array.isArray( requiredKeys ) ).toBeTruthy();
-
-			const updateResponse = await request( app )
-				.post( '/v1/contact/update' )
-				.send( {
-					wallet : walletObj.address,
-					data : contactToBeUpdated,
-					sig : contactToBeUpdated.sig
-				} );
-			expect( updateResponse ).toBeDefined();
-			expect( updateResponse ).toHaveProperty( 'statusCode' );
-			expect( updateResponse ).toHaveProperty( '_body' );
-			if ( 200 !== updateResponse.statusCode )
-			{
-				console.log( updateResponse );
-			}
-			expect( updateResponse.statusCode ).toBe( 200 );
-			expect( updateResponse._body ).toBeDefined();
-			expect( updateResponse._body ).toHaveProperty( 'version' );
-			expect( updateResponse._body ).toHaveProperty( 'ts' );
-			expect( updateResponse._body ).toHaveProperty( 'tu' );
-			expect( updateResponse._body ).toHaveProperty( 'error' );
-			expect( updateResponse._body ).toHaveProperty( 'data' );
-			expect( updateResponse._body.data ).toBeDefined();
-			if ( requiredKeys &&
-			     updateResponse &&
-			     updateResponse._body &&
-			     updateResponse._body.data )
-			{
-				const updatedContact = updateResponse._body.data;
-				for ( const key of requiredKeys )
-				{
-					expect( updatedContact ).toHaveProperty( key );
-				}
-				expect( SchemaUtil.createHexStringObjectIdFromTime( 0 ) === updatedContact.deleted ).toBeTruthy();
-				expect( updatedContact.sig ).toBe( contactToBeUpdated.sig );
-				expect( updatedContact.name ).toBe( contactToBeUpdated.name );
-				expect( updatedContact.avatar ).toBe( contactToBeUpdated.avatar );
-				expect( updatedContact.remark ).toBe( contactToBeUpdated.remark );
-			}
-
-			//	...
-			const queryOneResponse = await request( app )
-				.post( '/v1/contact/queryOne' )
-				.send( {
-					wallet : walletObj.address,
-					data : { by : 'walletAndAddress', address : lastOneAddress },
-					sig : ''
-				} );
-			expect( queryOneResponse ).toBeDefined();
-			expect( queryOneResponse ).toHaveProperty( 'statusCode' );
-			expect( queryOneResponse ).toHaveProperty( '_body' );
-			expect( queryOneResponse.statusCode ).toBe( 200 );
-			expect( queryOneResponse._body ).toBeDefined();
-			expect( queryOneResponse._body ).toHaveProperty( 'version' );
-			expect( queryOneResponse._body ).toHaveProperty( 'ts' );
-			expect( queryOneResponse._body ).toHaveProperty( 'tu' );
-			expect( queryOneResponse._body ).toHaveProperty( 'error' );
-			expect( queryOneResponse._body ).toHaveProperty( 'data' );
-			expect( queryOneResponse._body.data ).toBeDefined();
-			expect( queryOneResponse._body.data ).toHaveProperty( 'wallet' );
-			expect( queryOneResponse._body.data ).toHaveProperty( 'hash' );
-			expect( queryOneResponse._body.data.wallet ).toBe( walletObj.address );
-			expect( queryOneResponse._body.data.address ).toBe( lastOneAddress );
-			if ( requiredKeys &&
-			     queryOneResponse &&
-			     queryOneResponse._body &&
-			     queryOneResponse._body.data )
-			{
-				const findContactAgain = queryOneResponse._body.data;
-				for ( const key of requiredKeys )
-				{
-					expect( findContactAgain ).toHaveProperty( key );
-				}
-
-				//
-				//	**********
-				//	field delete should be 0
-				//
-				expect( SchemaUtil.createHexStringObjectIdFromTime( 0 ) === findContactAgain.deleted ).toBeTruthy();
-				expect( findContactAgain.sig ).toBe( contactToBeUpdated.sig );
-				expect( findContactAgain.name ).toBe( contactToBeUpdated.name );
-				expect( findContactAgain.avatar ).toBe( contactToBeUpdated.avatar );
-				expect( findContactAgain.remark ).toBe( contactToBeUpdated.remark );
-			}
-
-			//	wait for a while
-			await TestUtil.sleep(5 * 1000 );
-
-		}, 60 * 10e3 );
-
-		it( "should throw an `not found` error", async () =>
-		{
-			let contactToBeUpdated = {
-				wallet : walletObj.address,
-				address : `0xeBec795c9c8bBD61FFc14A6662944748F299cAcf`,
-				name : `name-${ new Date().toLocaleString() }`,
-				avatar : `https://avatar-${ new Date().toLocaleString() }`,
-				remark : `remark .... ${ new Date().toLocaleString() }`,
-			};
-			contactToBeUpdated.sig = await Web3Signer.signObject( walletObj.privateKey, contactToBeUpdated );
-			expect( contactToBeUpdated.sig ).toBeDefined();
-			expect( typeof contactToBeUpdated.sig ).toBe( 'string' );
-			expect( contactToBeUpdated.sig.length ).toBeGreaterThanOrEqual( 0 );
-
-			//	...
-			const requiredKeys = SchemaUtil.getRequiredKeys( `contact` );
-			expect( Array.isArray( requiredKeys ) ).toBeTruthy();
-
-			const updateResponse = await request( app )
-				.post( '/v1/contact/update' )
-				.send( {
-					wallet : walletObj.address,
-					data : contactToBeUpdated,
-					sig : contactToBeUpdated.sig
+					data : toBeUpdated,
+					sig : toBeUpdated.sig
 				} );
 			expect( updateResponse ).toBeDefined();
 			expect( updateResponse ).toHaveProperty( 'statusCode' );
 			expect( updateResponse ).toHaveProperty( '_body' );
 			expect( updateResponse.statusCode ).toBe( 400 );
 			expect( updateResponse._body ).toBeDefined();
+			expect( updateResponse._body ).toHaveProperty( 'version' );
+			expect( updateResponse._body ).toHaveProperty( 'ts' );
+			expect( updateResponse._body ).toHaveProperty( 'tu' );
+			expect( updateResponse._body ).toHaveProperty( 'error' );
+			expect( updateResponse._body ).toHaveProperty( 'data' );
 			expect( updateResponse._body.error ).toBeDefined();
-			expect( updateResponse._body.error ).toBe( 'not found' );
+			expect( updateResponse._body.error ).toBe( 'updating is banned' );
 
 			//	wait for a while
 			await TestUtil.sleep(5 * 1000 );
@@ -607,28 +419,31 @@ describe( 'ContactController', () =>
 
 	describe( "Deletion", () =>
 	{
-		it( "should logically delete a record by wallet and address from database", async () =>
+		it( `should logically delete a record by hash`, async () =>
 		{
-			let contactToBeDeleted = {
+			expect( savedPost ).toBeDefined();
+			expect( SchemaUtil.isValidKeccak256Hash( savedPost.hash ) ).toBeTruthy();
+
+			let toBeDeleted = {
 				wallet : walletObj.address,
-				address : lastOneAddress,
+				hash : savedPost.hash,
 				deleted : SchemaUtil.createHexStringObjectIdFromTime( 1 ),
 			};
-			contactToBeDeleted.sig = await Web3Signer.signObject( walletObj.privateKey, contactToBeDeleted );
-			expect( contactToBeDeleted.sig ).toBeDefined();
-			expect( typeof contactToBeDeleted.sig ).toBe( 'string' );
-			expect( contactToBeDeleted.sig.length ).toBeGreaterThanOrEqual( 0 );
+			toBeDeleted.sig = await Web3Signer.signObject( walletObj.privateKey, toBeDeleted );
+			expect( toBeDeleted.sig ).toBeDefined();
+			expect( typeof toBeDeleted.sig ).toBe( 'string' );
+			expect( toBeDeleted.sig.length ).toBeGreaterThanOrEqual( 0 );
 
 			//	...
-			const requiredKeys = SchemaUtil.getRequiredKeys( `contact` );
+			const requiredKeys = SchemaUtil.getRequiredKeys( `post` );
 			expect( Array.isArray( requiredKeys ) ).toBeTruthy();
 
 			const updateResponse = await request( app )
-				.post( '/v1/contact/delete' )
+				.post( '/v1/post/delete' )
 				.send( {
 					wallet : walletObj.address,
-					data : contactToBeDeleted,
-					sig : contactToBeDeleted.sig
+					data : toBeDeleted,
+					sig : toBeDeleted.sig
 				} );
 			expect( updateResponse ).toBeDefined();
 			expect( updateResponse ).toHaveProperty( 'statusCode' );
@@ -648,10 +463,10 @@ describe( 'ContactController', () =>
 
 			//	...
 			const queryOneResponse = await request( app )
-				.post( '/v1/contact/queryOne' )
+				.post( '/v1/post/queryOne' )
 				.send( {
 					wallet : walletObj.address,
-					data : { by : 'walletAndAddress', address : lastOneAddress },
+					data : { by : 'walletAndHash', hash : savedPost.hash },
 					sig : ''
 				} );
 			expect( queryOneResponse ).toBeDefined();
