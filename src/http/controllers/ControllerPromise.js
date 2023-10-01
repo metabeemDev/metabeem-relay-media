@@ -1,37 +1,29 @@
 import { TypeUtil } from "chaintalk-utils";
-import { NetworkUtil } from "../../utils/NetworkUtil.js";
-import { TransferService } from "../../services/TransferService.js";
+import { EtherWallet } from "web3id";
 import { RpcMessage } from "../../models/RpcMessage.js";
 import { MessageBody } from "../../models/MessageBody.js";
-import { EtherWallet } from "web3id";
+import { TransferService } from "../../services/TransferService.js";
+
 
 const transferService = new TransferService();
 
 
-export class ContactController
+export class ControllerPromise
 {
-	static async add( req, res )
-	{
-		try
-		{
-			const result = await ContactControllerPromise.add( req, res );
-			res.send( NetworkUtil.getResponseObject( result ) );
-		}
-		catch ( err )
-		{
-			res.status( 400 ).send( NetworkUtil.getResponseObject( null, { error : err } ) );
-		}
-	}
-}
-
-export class ContactControllerPromise
-{
-	static add( req, res )
+	static process( serviceName, methodName, req, res )
 	{
 		return new Promise( async ( resolve, reject ) =>
 		{
 			try
 			{
+				if ( ! TypeUtil.isNotEmptyString( serviceName ) )
+				{
+					return reject( `invalid serviceName` );
+				}
+				if ( ! TypeUtil.isNotEmptyString( methodName ) )
+				{
+					return reject( `invalid methodName` );
+				}
 				if ( ! TypeUtil.isNotNullObjectWithKeys( req, [ 'body' ] ) )
 				{
 					return reject( `invalid body` );
@@ -44,16 +36,12 @@ export class ContactControllerPromise
 				{
 					return reject( `invalid wallet` );
 				}
-				if ( ! EtherWallet.isValidSignatureString( req.body.sig ) )
-				{
-					return reject( `invalid sig` );
-				}
 
 				//	...
 				const rpcMessage = RpcMessage.buildStore({
 					version	: `1.0.0`,
-					service	: `contact`,
-					method : `add`,
+					service	: serviceName,
+					method : methodName,
 					body : MessageBody.build({
 						wallet : req.body.wallet,
 						data : req.body.data,

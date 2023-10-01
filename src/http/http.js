@@ -1,6 +1,6 @@
 import express from "express";
 import { appRoutes } from './httpRoutes.js';
-import { xResponseTime } from './middlewares/xResponseTime.js'
+import { TestUtil } from "chaintalk-utils";
 
 const http = express();
 const port = process.env.HTTP_PORT;
@@ -20,7 +20,14 @@ export function runHttpServer()
 	appRoutes( http );
 
 	//	...
-	listenServer = http.listen( port, () => console.log( `))) Metabeem Relay listening on port ${ port }!` ) );
+	listenServer = http.listen( port, () =>
+	{
+		if ( TestUtil.isTestEnv() )
+		{
+			return false;
+		}
+		console.log( `))) Metabeem Relay listening on port ${ port }!` );
+	} );
 
 
 	//
