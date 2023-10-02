@@ -19,8 +19,8 @@ describe( 'LikeController', () =>
 	let savedPost;
 	let savedLike;
 
-	const statisticKeys = SchemaUtil.getPrefixedKeys( `post`, 'statistic' );
-	const exceptedKeys = Array.isArray( statisticKeys ) ? statisticKeys : [];
+	const postStatisticKeys = SchemaUtil.getPrefixedKeys( `post`, 'statistic' );
+	const postExceptedKeys = Array.isArray( postStatisticKeys ) ? postStatisticKeys : [];
 
 
 	beforeAll( async () =>
@@ -59,7 +59,7 @@ describe( 'LikeController', () =>
 			createdAt: new Date(),
 			updatedAt: new Date()
 		};
-		newPost.sig = await Web3Signer.signObject( walletObj.privateKey, newPost, exceptedKeys );
+		newPost.sig = await Web3Signer.signObject( walletObj.privateKey, newPost, postExceptedKeys );
 		newPost.hash = await Web3Digester.hashObject( newPost );
 		expect( newPost.sig ).toBeDefined();
 		expect( typeof newPost.sig ).toBe( 'string' );
@@ -133,7 +133,7 @@ describe( 'LikeController', () =>
 				createdAt: new Date(),
 				updatedAt: new Date()
 			};
-			like.sig = await Web3Signer.signObject( walletObj.privateKey, like, exceptedKeys );
+			like.sig = await Web3Signer.signObject( walletObj.privateKey, like, postExceptedKeys );
 			like.hash = await Web3Digester.hashObject( like );
 			expect( like.sig ).toBeDefined();
 			expect( typeof like.sig ).toBe( 'string' );
@@ -399,7 +399,7 @@ describe( 'LikeController', () =>
 					createdAt: new Date(),
 					updatedAt: new Date()
 				};
-				newPost.sig = await Web3Signer.signObject( walletObj.privateKey, newPost, exceptedKeys );
+				newPost.sig = await Web3Signer.signObject( walletObj.privateKey, newPost, postExceptedKeys );
 				newPost.hash = await Web3Digester.hashObject( newPost );
 				expect( newPost.sig ).toBeDefined();
 				expect( typeof newPost.sig ).toBe( 'string' );
@@ -451,8 +451,8 @@ describe( 'LikeController', () =>
 					createdAt: new Date(),
 					updatedAt: new Date()
 				};
-				like.sig = await Web3Signer.signObject( walletObj.privateKey, like, exceptedKeys );
-				like.hash = await Web3Digester.hashObject( like, exceptedKeys );
+				like.sig = await Web3Signer.signObject( walletObj.privateKey, like, postExceptedKeys );
+				like.hash = await Web3Digester.hashObject( like, postExceptedKeys );
 				expect( like.sig ).toBeDefined();
 				expect( typeof like.sig ).toBe( 'string' );
 				expect( like.sig.length ).toBeGreaterThanOrEqual( 0 );
@@ -536,7 +536,7 @@ describe( 'LikeController', () =>
 				refBody : '',
 				remark : `remark .... ${ new Date().toLocaleString() }`,
 			};
-			toBeUpdated.sig = await Web3Signer.signObject( walletObj.privateKey, toBeUpdated, exceptedKeys );
+			toBeUpdated.sig = await Web3Signer.signObject( walletObj.privateKey, toBeUpdated, postExceptedKeys );
 			expect( toBeUpdated.sig ).toBeDefined();
 			expect( typeof toBeUpdated.sig ).toBe( 'string' );
 			expect( toBeUpdated.sig.length ).toBeGreaterThanOrEqual( 0 );
@@ -583,7 +583,7 @@ describe( 'LikeController', () =>
 				hash : savedLike.hash,
 				deleted : SchemaUtil.createHexStringObjectIdFromTime( 1 ),
 			};
-			toBeDeleted.sig = await Web3Signer.signObject( walletObj.privateKey, toBeDeleted, exceptedKeys );
+			toBeDeleted.sig = await Web3Signer.signObject( walletObj.privateKey, toBeDeleted, postExceptedKeys );
 			expect( toBeDeleted.sig ).toBeDefined();
 			expect( typeof toBeDeleted.sig ).toBe( 'string' );
 			expect( toBeDeleted.sig.length ).toBeGreaterThanOrEqual( 0 );

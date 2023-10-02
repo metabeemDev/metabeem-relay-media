@@ -4,24 +4,24 @@ import { describe, expect } from "@jest/globals";
 import { EtherWallet, Web3Digester, Web3Signer } from "web3id";
 import { ethers } from "ethers";
 import { SchemaUtil } from "chaintalk-store";
-import { TestUtil } from "chaintalk-utils";
-import { last } from "lodash";
+import { TestUtil, TypeUtil } from "chaintalk-utils";
 
 const server = runHttpServer();
 
 
-describe( 'PostController', () =>
+describe( 'ProfileController', () =>
 {
 	//
 	//	create a wallet by mnemonic
 	//
 	const mnemonic = 'olympic cradle tragic crucial exit annual silly cloth scale fine gesture ancient';
 	const walletObj = EtherWallet.createWalletFromMnemonic( mnemonic );
-	let lastOneAddress;
-	let savedPost;
+	let savedProfile;
 
 	const postStatisticKeys = SchemaUtil.getPrefixedKeys( `post`, 'statistic' );
 	const postExceptedKeys = Array.isArray( postStatisticKeys ) ? postStatisticKeys : [];
+
+	const oneProfileKey = `key-m-${ new Date().getTime() }`;
 
 
 	beforeAll( async () =>
@@ -54,45 +54,32 @@ describe( 'PostController', () =>
 	{
 		it( "it should response the POST method by path /v1/post/add", async () =>
 		{
-			//	...
-			lastOneAddress = EtherWallet.createWalletFromMnemonic().address;
-
 			//
-			//	create a new post with ether signature
+			//	create a new like with ether signature
 			//
-			let newRecord = {
+			let profile = {
 				timestamp : new Date().getTime(),
 				hash : '',
 				version : '1.0.0',
 				deleted : SchemaUtil.createHexStringObjectIdFromTime( 0 ),
 				wallet : walletObj.address,
+				key : oneProfileKey,
+				value : 'value1',
+				remark : 'no remark',
 				sig : ``,
-				authorName : 'XING',
-				authorAvatar : 'https://avatars.githubusercontent.com/u/142800322?v=4',
-				body : 'Hello 1',
-				pictures : [],
-				videos : [],
-				bitcoinPrice : '25888',
-				statisticView : 0,
-				statisticRepost : 0,
-				statisticQuote : 0,
-				statisticLike : 0,
-				statisticFavorite : 0,
-				statisticReply : 0,
-				remark : 'no ...',
 				createdAt: new Date(),
 				updatedAt: new Date()
 			};
-			newRecord.sig = await Web3Signer.signObject( walletObj.privateKey, newRecord, postExceptedKeys );
-			newRecord.hash = await Web3Digester.hashObject( newRecord );
-			expect( newRecord.sig ).toBeDefined();
-			expect( typeof newRecord.sig ).toBe( 'string' );
-			expect( newRecord.sig.length ).toBeGreaterThanOrEqual( 0 );
+			profile.sig = await Web3Signer.signObject( walletObj.privateKey, profile );
+			profile.hash = await Web3Digester.hashObject( profile );
+			expect( profile.sig ).toBeDefined();
+			expect( typeof profile.sig ).toBe( 'string' );
+			expect( profile.sig.length ).toBeGreaterThanOrEqual( 0 );
 
 			const response = await request( app )
-				.post( '/v1/post/add' )
+				.post( '/v1/profile/add' )
 				.send( {
-					wallet : walletObj.address, data : newRecord, sig : newRecord.sig
+					wallet : walletObj.address, data : profile, sig : profile.sig
 				} );
 			expect( response ).toBeDefined();
 			expect( response ).toHaveProperty( 'statusCode' );
@@ -111,11 +98,34 @@ describe( 'PostController', () =>
 			expect( response._body.data ).toBeDefined();
 			expect( response._body.data ).toHaveProperty( 'hash' );
 			expect( response._body.data ).toHaveProperty( 'sig' );
-			expect( response._body.data.hash ).toBe( newRecord.hash );
-			expect( response._body.data.sig ).toBe( newRecord.sig );
+			expect( response._body.data.hash ).toBe( profile.hash );
+			expect( response._body.data.sig ).toBe( profile.sig );
+			const requiredKeys = SchemaUtil.getRequiredKeys( `profile` );
+			expect( Array.isArray( requiredKeys ) ).toBeTruthy();
+			if ( requiredKeys )
+			{
+				for ( const key of requiredKeys )
+				{
+					expect( response._body.data ).toHaveProperty( key );
+				}
+			}
 
 			//	...
-			savedPost = response._body.data;
+			savedProfile = response._body.data;
+
+
+			const responseDup = await request( app )
+				.post( '/v1/profile/add' )
+				.send( {
+					wallet : walletObj.address, data : profile, sig : profile.sig
+				} );
+			expect( responseDup ).toBeDefined();
+			expect( responseDup ).toHaveProperty( 'statusCode' );
+			expect( responseDup ).toHaveProperty( '_body' );
+			expect( responseDup.statusCode ).toBe( 400 );
+			expect( responseDup._body ).toBeDefined();
+			expect( responseDup._body ).toHaveProperty( 'error' );
+			expect( responseDup._body.error ).toBe( 'duplicate key error' );
 
 			//	wait for a while
 			await TestUtil.sleep( 5 * 1000 );
@@ -127,15 +137,15 @@ describe( 'PostController', () =>
 	{
 		it( "should return a record by wallet and address from database", async () =>
 		{
-			expect( savedPost ).toBeDefined();
-			expect( savedPost ).toHaveProperty( 'hash' );
-			expect( SchemaUtil.isValidKeccak256Hash( savedPost.hash ) ).toBeTruthy();
+			expect( savedProfile ).toBeDefined();
+			expect( savedProfile ).toHaveProperty( 'hash' );
+			expect( SchemaUtil.isValidKeccak256Hash( savedProfile.hash ) ).toBeTruthy();
 
 			const response = await request( app )
-				.post( '/v1/post/queryOne' )
+				.post( '/v1/profile/queryOne' )
 				.send( {
 					wallet : walletObj.address,
-					data : { by : 'walletAndHash', hash : savedPost.hash },
+					data : { by : 'walletAndKey', key : savedProfile.key },
 					sig : ''
 				} );
 			//
@@ -177,8 +187,8 @@ describe( 'PostController', () =>
 			expect( response._body.data ).toHaveProperty( 'hash' );
 			expect( response._body.data ).toHaveProperty( 'sig' );
 			expect( response._body.data.wallet ).toBe( walletObj.address );
-			expect( response._body.data.hash ).toBe( savedPost.hash );
-			expect( response._body.data.sig ).toBe( savedPost.sig );
+			expect( response._body.data.hash ).toBe( savedProfile.hash );
+			expect( response._body.data.sig ).toBe( savedProfile.sig );
 
 		}, 60 * 10e3 );
 	} );
@@ -188,7 +198,7 @@ describe( 'PostController', () =>
 		it( "should return a list of records from database", async () =>
 		{
 			const response = await request( app )
-				.post( '/v1/post/queryList' )
+				.post( '/v1/profile/queryList' )
 				.send( {
 					wallet : walletObj.address,
 					data : { by : 'wallet' },
@@ -270,45 +280,35 @@ describe( 'PostController', () =>
 			//
 			for ( let i = 0; i < 100; i++ )
 			{
-				lastOneAddress = EtherWallet.createWalletFromMnemonic().address;
 				const NoStr = Number( i ).toString().padStart( 2, '0' );
+				const newKey = `key${ new Date().getTime() }`;
 
 				//
-				//	create a new post with ether signature
+				//	create a new profile with ether signature
 				//
-				let newRecord = {
+				let profile = {
 					timestamp : new Date().getTime(),
 					hash : '',
 					version : '1.0.0',
 					deleted : SchemaUtil.createHexStringObjectIdFromTime( 0 ),
 					wallet : walletObj.address,
+					key : newKey,
+					value : `value${ NoStr }`,
+					remark : `no remark ${ NoStr }`,
 					sig : ``,
-					authorName : 'XING',
-					authorAvatar : 'https://avatars.githubusercontent.com/u/142800322?v=4',
-					body : 'Hello 1',
-					pictures : [],
-					videos : [],
-					bitcoinPrice : '25888',
-					statisticView : 0,
-					statisticRepost : 0,
-					statisticQuote : 0,
-					statisticLike : 0,
-					statisticFavorite : 0,
-					statisticReply : 0,
-					remark : 'no ...',
 					createdAt: new Date(),
 					updatedAt: new Date()
 				};
-				newRecord.sig = await Web3Signer.signObject( walletObj.privateKey, newRecord, postExceptedKeys );
-				newRecord.hash = await Web3Digester.hashObject( newRecord );
-				expect( newRecord.sig ).toBeDefined();
-				expect( typeof newRecord.sig ).toBe( 'string' );
-				expect( newRecord.sig.length ).toBeGreaterThanOrEqual( 0 );
+				profile.sig = await Web3Signer.signObject( walletObj.privateKey, profile );
+				profile.hash = await Web3Digester.hashObject( profile );
+				expect( profile.sig ).toBeDefined();
+				expect( typeof profile.sig ).toBe( 'string' );
+				expect( profile.sig.length ).toBeGreaterThanOrEqual( 0 );
 
 				const response = await request( app )
-					.post( '/v1/post/add' )
+					.post( '/v1/profile/add' )
 					.send( {
-						wallet : walletObj.address, data : newRecord, sig : newRecord.sig
+						wallet : walletObj.address, data : profile, sig : profile.sig
 					} );
 				//console.log( response );
 				expect( response ).toBeDefined();
@@ -323,10 +323,10 @@ describe( 'PostController', () =>
 				expect( response._body ).toHaveProperty( 'data' );
 				expect( response._body.data ).toBeDefined();
 				expect( response._body.data ).toHaveProperty( 'hash' );
-				expect( response._body.data.hash ).toBe( newRecord.hash );
+				expect( response._body.data.hash ).toBe( profile.hash );
 
 				//	...
-				savedPost = response._body.data;
+				savedProfile = response._body.data;
 			}
 
 			//
@@ -335,7 +335,7 @@ describe( 'PostController', () =>
 			for ( let page = 1; page <= 10; page++ )
 			{
 				const response = await request( app )
-					.post( '/v1/post/queryList' )
+					.post( '/v1/profile/queryList' )
 					.send( {
 						wallet : walletObj.address,
 						data : { by : 'wallet', options : { pageNo : page, pageSize : 10 } },
@@ -371,11 +371,14 @@ describe( 'PostController', () =>
 	{
 		it( "should update a record by wallet and address from database", async () =>
 		{
+			expect( savedProfile ).toBeDefined();
+			expect( savedProfile ).toHaveProperty( 'key' );
+			expect( TypeUtil.isNotEmptyString( savedProfile.key ) ).toBeTruthy();
+
 			let toBeUpdated = {
 				wallet : walletObj.address,
-				address : lastOneAddress,
-				name : `name-${ new Date().toLocaleString() }`,
-				avatar : `https://avatar-${ new Date().toLocaleString() }`,
+				key : savedProfile.key,
+				value : `https://avatar-${ new Date().toLocaleString() }`,
 				remark : `remark .... ${ new Date().toLocaleString() }`,
 			};
 			toBeUpdated.sig = await Web3Signer.signObject( walletObj.privateKey, toBeUpdated );
@@ -388,24 +391,54 @@ describe( 'PostController', () =>
 			expect( Array.isArray( requiredKeys ) ).toBeTruthy();
 
 			const updateResponse = await request( app )
-				.post( '/v1/post/update' )
+				.post( '/v1/profile/update' )
 				.send( {
 					wallet : walletObj.address,
 					data : toBeUpdated,
 					sig : toBeUpdated.sig
 				} );
+			//
+			//	console.log( updateResponse._body )
+			//	{
+			// 		version: 1,
+			// 		ts: 1696235849516,
+			// 		tu: 0,
+			// 		error: null,
+			// 		data: {
+			// 			_id: '651a81442b16d28b1dade91f',
+			// 			timestamp: 1696235844364,
+			// 			hash: '0x22272d6bfe31a293a54b444683e8f780039ff28ebae174d4c46fe39ed5ea7c9a',
+			// 			version: '1.0.0',
+			// 			deleted: '000000000000000000000000',
+			// 			wallet: '0xC8F60EaF5988aC37a2963aC5Fabe97f709d6b357',
+			// 			sig: '0x724b5ad3f725b93229c657ab56c381cd35fb1a181e56509a4db555aebd89dc9642117e2ce82b97b4f0bbd4793afe4f038a3a69b435553fd7518f607bcdfc64cd1c',
+			// 			key: 'key1696235844364',
+			// 			value: 'https://avatar-10/2/2023, 4:37:29 PM',
+			// 			remark: 'remark .... 10/2/2023, 4:37:29 PM',
+			// 			createdAt: '2023-10-02T08:37:24.364Z',
+			// 			updatedAt: '2023-10-02T08:37:29.507Z',
+			// 			__v: 0
+			// 		}
+			//	}
+			//
 			expect( updateResponse ).toBeDefined();
 			expect( updateResponse ).toHaveProperty( 'statusCode' );
 			expect( updateResponse ).toHaveProperty( '_body' );
-			expect( updateResponse.statusCode ).toBe( 400 );
+			expect( updateResponse.statusCode ).toBe( 200 );
 			expect( updateResponse._body ).toBeDefined();
 			expect( updateResponse._body ).toHaveProperty( 'version' );
 			expect( updateResponse._body ).toHaveProperty( 'ts' );
 			expect( updateResponse._body ).toHaveProperty( 'tu' );
 			expect( updateResponse._body ).toHaveProperty( 'error' );
 			expect( updateResponse._body ).toHaveProperty( 'data' );
-			expect( updateResponse._body.error ).toBeDefined();
-			expect( updateResponse._body.error ).toBe( 'updating is banned' );
+			expect( updateResponse._body.data ).toBeDefined();
+			expect( updateResponse._body.data ).toHaveProperty( 'hash' );
+			expect( updateResponse._body.data ).toHaveProperty( 'sig' );
+			expect( updateResponse._body.data ).toHaveProperty( 'key' );
+			expect( updateResponse._body.data ).toHaveProperty( 'value' );
+			expect( updateResponse._body.data.sig ).toBe( toBeUpdated.sig )
+			expect( updateResponse._body.data.key ).toBe( toBeUpdated.key )
+			expect( updateResponse._body.data.value ).toBe( toBeUpdated.value )
 
 			//	wait for a while
 			await TestUtil.sleep(5 * 1000 );
@@ -417,12 +450,12 @@ describe( 'PostController', () =>
 	{
 		it( `should logically delete a record by hash`, async () =>
 		{
-			expect( savedPost ).toBeDefined();
-			expect( SchemaUtil.isValidKeccak256Hash( savedPost.hash ) ).toBeTruthy();
+			expect( savedProfile ).toBeDefined();
+			expect( SchemaUtil.isValidKeccak256Hash( savedProfile.hash ) ).toBeTruthy();
 
 			let toBeDeleted = {
 				wallet : walletObj.address,
-				hash : savedPost.hash,
+				key : savedProfile.key,
 				deleted : SchemaUtil.createHexStringObjectIdFromTime( 1 ),
 			};
 			toBeDeleted.sig = await Web3Signer.signObject( walletObj.privateKey, toBeDeleted );
@@ -431,11 +464,8 @@ describe( 'PostController', () =>
 			expect( toBeDeleted.sig.length ).toBeGreaterThanOrEqual( 0 );
 
 			//	...
-			const requiredKeys = SchemaUtil.getRequiredKeys( `post` );
-			expect( Array.isArray( requiredKeys ) ).toBeTruthy();
-
 			const updateResponse = await request( app )
-				.post( '/v1/post/delete' )
+				.post( '/v1/profile/delete' )
 				.send( {
 					wallet : walletObj.address,
 					data : toBeDeleted,
@@ -459,10 +489,10 @@ describe( 'PostController', () =>
 
 			//	...
 			const queryOneResponse = await request( app )
-				.post( '/v1/post/queryOne' )
+				.post( '/v1/profile/queryOne' )
 				.send( {
 					wallet : walletObj.address,
-					data : { by : 'walletAndHash', hash : savedPost.hash },
+					data : { by : 'walletAndKey', key : savedProfile.key },
 					sig : ''
 				} );
 			expect( queryOneResponse ).toBeDefined();
