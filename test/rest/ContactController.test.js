@@ -316,12 +316,8 @@ describe( 'ContactController', () =>
 					.post( '/v1/contact/queryList' )
 					.send( {
 						wallet : walletObj.address,
-						data : { by : 'walletAndAddress' },
+						data : { by : 'walletAndAddress', options : { pageNo : page, pageSize : 10 } },
 						sig : '',
-						options : {
-							pageNo : page,
-							pageSize : 10
-						},
 					} );
 				expect( response ).toBeDefined();
 				expect( response ).toHaveProperty( 'statusCode' );

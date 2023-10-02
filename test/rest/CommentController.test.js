@@ -10,7 +10,7 @@ import { last } from "lodash";
 const server = runHttpServer();
 
 
-describe( 'PostController', () =>
+describe( 'CommentController', () =>
 {
 	//
 	//	create a wallet by mnemonic
@@ -19,6 +19,7 @@ describe( 'PostController', () =>
 	const walletObj = EtherWallet.createWalletFromMnemonic( mnemonic );
 	let lastOneAddress;
 	let savedPost;
+	let savedComment;
 
 	const statisticKeys = SchemaUtil.getPrefixedKeys( `post`, 'statistic' );
 	const exceptedKeys = Array.isArray( statisticKeys ) ? statisticKeys : [];
@@ -34,6 +35,65 @@ describe( 'PostController', () =>
 		expect( walletObj.index ).toBe( 0 );
 		expect( walletObj.path ).toBe( ethers.defaultPath );
 
+		//
+		//	create a new post with ether signature
+		//
+		let newPost = {
+			timestamp : new Date().getTime(),
+			hash : '',
+			version : '1.0.0',
+			deleted : SchemaUtil.createHexStringObjectIdFromTime( 0 ),
+			wallet : walletObj.address,
+			sig : ``,
+			authorName : 'XING',
+			authorAvatar : 'https://avatars.githubusercontent.com/u/142800322?v=4',
+			body : 'Hello 1',
+			pictures : [],
+			videos : [],
+			bitcoinPrice : '25888',
+			statisticView : 0,
+			statisticRepost : 0,
+			statisticQuote : 0,
+			statisticLike : 0,
+			statisticFavorite : 0,
+			statisticReply : 0,
+			remark : 'no ...',
+			createdAt: new Date(),
+			updatedAt: new Date()
+		};
+		newPost.sig = await Web3Signer.signObject( walletObj.privateKey, newPost, exceptedKeys );
+		newPost.hash = await Web3Digester.hashObject( newPost );
+		expect( newPost.sig ).toBeDefined();
+		expect( typeof newPost.sig ).toBe( 'string' );
+		expect( newPost.sig.length ).toBeGreaterThanOrEqual( 0 );
+
+		const response = await request( app )
+			.post( '/v1/post/add' )
+			.send( {
+				wallet : walletObj.address, data : newPost, sig : newPost.sig
+			} );
+		expect( response ).toBeDefined();
+		expect( response ).toHaveProperty( 'statusCode' );
+		expect( response ).toHaveProperty( '_body' );
+		if ( 200 !== response.statusCode )
+		{
+			console.log( response );
+		}
+		expect( response.statusCode ).toBe( 200 );
+		expect( response._body ).toBeDefined();
+		expect( response._body ).toHaveProperty( 'version' );
+		expect( response._body ).toHaveProperty( 'ts' );
+		expect( response._body ).toHaveProperty( 'tu' );
+		expect( response._body ).toHaveProperty( 'error' );
+		expect( response._body ).toHaveProperty( 'data' );
+		expect( response._body.data ).toBeDefined();
+		expect( response._body.data ).toHaveProperty( 'hash' );
+		expect( response._body.data ).toHaveProperty( 'sig' );
+		expect( response._body.data.hash ).toBe( newPost.hash );
+		expect( response._body.data.sig ).toBe( newPost.sig );
+
+		//	...
+		savedPost = response._body.data;
 	} );
 	afterAll( async () =>
 	{
@@ -54,13 +114,14 @@ describe( 'PostController', () =>
 	{
 		it( "it should response the POST method by path /v1/post/add", async () =>
 		{
-			//	...
-			lastOneAddress = EtherWallet.createWalletFromMnemonic().address;
+			expect( savedPost ).toBeDefined();
+			expect( savedPost ).toHaveProperty( 'hash' );
+			expect( SchemaUtil.isValidKeccak256Hash( savedPost.hash ) ).toBeTruthy();
 
 			//
-			//	create a new post with ether signature
+			//	create a new comment with ether signature
 			//
-			let newRecord = {
+			let newComment = {
 				timestamp : new Date().getTime(),
 				hash : '',
 				version : '1.0.0',
@@ -69,6 +130,9 @@ describe( 'PostController', () =>
 				sig : ``,
 				authorName : 'XING',
 				authorAvatar : 'https://avatars.githubusercontent.com/u/142800322?v=4',
+				replyTo : 'HaSeme',
+				postHash : savedPost.hash,
+				postSnippet : `post name abc`,
 				body : 'Hello 1',
 				pictures : [],
 				videos : [],
@@ -83,16 +147,16 @@ describe( 'PostController', () =>
 				createdAt: new Date(),
 				updatedAt: new Date()
 			};
-			newRecord.sig = await Web3Signer.signObject( walletObj.privateKey, newRecord, exceptedKeys );
-			newRecord.hash = await Web3Digester.hashObject( newRecord );
-			expect( newRecord.sig ).toBeDefined();
-			expect( typeof newRecord.sig ).toBe( 'string' );
-			expect( newRecord.sig.length ).toBeGreaterThanOrEqual( 0 );
+			newComment.sig = await Web3Signer.signObject( walletObj.privateKey, newComment, exceptedKeys );
+			newComment.hash = await Web3Digester.hashObject( newComment, exceptedKeys );
+			expect( newComment.sig ).toBeDefined();
+			expect( typeof newComment.sig ).toBe( 'string' );
+			expect( newComment.sig.length ).toBeGreaterThanOrEqual( 0 );
 
 			const response = await request( app )
-				.post( '/v1/post/add' )
+				.post( '/v1/comment/add' )
 				.send( {
-					wallet : walletObj.address, data : newRecord, sig : newRecord.sig
+					wallet : walletObj.address, data : newComment, sig : newComment.sig
 				} );
 			expect( response ).toBeDefined();
 			expect( response ).toHaveProperty( 'statusCode' );
@@ -111,11 +175,11 @@ describe( 'PostController', () =>
 			expect( response._body.data ).toBeDefined();
 			expect( response._body.data ).toHaveProperty( 'hash' );
 			expect( response._body.data ).toHaveProperty( 'sig' );
-			expect( response._body.data.hash ).toBe( newRecord.hash );
-			expect( response._body.data.sig ).toBe( newRecord.sig );
+			expect( response._body.data.hash ).toBe( newComment.hash );
+			expect( response._body.data.sig ).toBe( newComment.sig );
 
 			//	...
-			savedPost = response._body.data;
+			savedComment = response._body.data;
 
 			//	wait for a while
 			await TestUtil.sleep( 5 * 1000 );
@@ -127,15 +191,17 @@ describe( 'PostController', () =>
 	{
 		it( "should return a record by wallet and address from database", async () =>
 		{
-			expect( savedPost ).toBeDefined();
-			expect( savedPost ).toHaveProperty( 'hash' );
-			expect( SchemaUtil.isValidKeccak256Hash( savedPost.hash ) ).toBeTruthy();
+			expect( savedComment ).toBeDefined();
+			expect( savedComment ).toHaveProperty( 'hash' );
+			expect( savedComment ).toHaveProperty( 'sig' );
+			expect( SchemaUtil.isValidKeccak256Hash( savedComment.hash ) ).toBeTruthy();
+			expect( EtherWallet.isValidSignatureString( savedComment.sig ) ).toBeTruthy();
 
 			const response = await request( app )
-				.post( '/v1/post/queryOne' )
+				.post( '/v1/comment/queryOne' )
 				.send( {
 					wallet : walletObj.address,
-					data : { by : 'walletAndHash', hash : savedPost.hash },
+					data : { by : 'walletAndHash', hash : savedComment.hash },
 					sig : ''
 				} );
 			//
@@ -177,8 +243,8 @@ describe( 'PostController', () =>
 			expect( response._body.data ).toHaveProperty( 'hash' );
 			expect( response._body.data ).toHaveProperty( 'sig' );
 			expect( response._body.data.wallet ).toBe( walletObj.address );
-			expect( response._body.data.hash ).toBe( savedPost.hash );
-			expect( response._body.data.sig ).toBe( savedPost.sig );
+			expect( response._body.data.hash ).toBe( savedComment.hash );
+			expect( response._body.data.sig ).toBe( savedComment.sig );
 
 		}, 60 * 10e3 );
 	} );
@@ -187,15 +253,19 @@ describe( 'PostController', () =>
 	{
 		it( "should return a list of records from database", async () =>
 		{
+			expect( savedPost ).toBeDefined();
+			expect( savedPost ).toHaveProperty( 'hash' );
+			expect( SchemaUtil.isValidKeccak256Hash( savedPost.hash ) ).toBeTruthy();
+
 			const response = await request( app )
-				.post( '/v1/post/queryList' )
+				.post( '/v1/comment/queryList' )
 				.send( {
 					wallet : walletObj.address,
-					data : { by : 'wallet' },
+					data : { by : 'postHash', postHash : savedPost.hash },
 					sig : ''
 				} );
 			//
-			//    console.log( response._body );
+			//   console.log( response._body );
 			//
 			//    {
 			//        version: 1,
@@ -210,19 +280,31 @@ describe( 'PostController', () =>
 			//            list:
 			//            [
 			//                {
-			//                    _id: '65138d1481726a73f364dee9',
-			//                    timestamp: 1695780116967,
-			//                    hash: '0x9f37834abc1111825bfc827de4922a0c2e639385afa921acf3acdaefa786740e',
+			//                    _id: '651a1629440e3be734bea6df',
+			//                    timestamp: 1696208425667,
+			//                    hash: '0xeccdb9a81b6265b7ddbb0e1c7729f2e6585687b9b0d523ac3013a26dce3ddb23',
 			//                    version: '1.0.0',
 			//                    deleted: '000000000000000000000000',
 			//                    wallet: '0xC8F60EaF5988aC37a2963aC5Fabe97f709d6b357',
-			//                    sig: '0xd9f2de6c40cfe2d54a243dc19daada44faf0caca6cfc25c589f77556d72c8df80c7ac1131fd06ba73969bd6778ec7fbc47daa403c44276d8c421a490a606ae191b',
-			//                    name: 'Sam',
-			//                    address: '0xFb1ca76cA7d4e158dd3C3eaCe077Dd04Be51b882',
-			//                    avatar: 'https://avatars.githubusercontent.com/u/142800322?v=4',
-			//                    remark: 'no remark',
-			//                    createdAt: '2023-09-27T02:01:56.967Z',
-			//                    updatedAt: '2023-09-27T02:01:56.967Z',
+			//                    sig: '0x772b7c8d32089e765a0272729ab3a380f642a9e386434a413fa6301a113f3aac411d577fa417d00ad45b19fe604babdcf92427694934ccc7389ab3b924de0d1b1b',
+			//                    postHash: '0x09617c47aea6ed7cabcbed5ed269ef248138ae453b0a37d1ec45709f65300525',
+			//                    authorName: 'XING',
+			//                    authorAvatar: 'https://avatars.githubusercontent.com/u/142800322?v=4',
+			//                    replyTo: 'HaSeme',
+			//                    postSnippet: 'post name abc',
+			//                    body: 'Hello 1',
+			//                    pictures: [],
+			//                    videos: [],
+			//                    bitcoinPrice: '25888',
+			//                    statisticView: 0,
+			//                    statisticRepost: 0,
+			//                    statisticQuote: 0,
+			//                    statisticLike: 0,
+			//                    statisticFavorite: 0,
+			//                    statisticReply: 0,
+			//                    remark: 'no ...',
+			//                    createdAt: '2023-10-02T01:00:25.667Z',
+			//                    updatedAt: '2023-10-02T01:00:25.667Z',
 			//                    __v: 0
 			//                }
 			//            ]
@@ -254,7 +336,9 @@ describe( 'PostController', () =>
 					expect( item ).toBeDefined();
 					expect( item ).toHaveProperty( '_id' );
 					expect( item ).toHaveProperty( 'wallet' );
+					expect( item ).toHaveProperty( 'postHash' );
 					expect( item.wallet ).toBe( walletObj.address );
+					expect( item.postHash ).toBe( savedPost.hash );
 				}
 			}
 
@@ -270,13 +354,12 @@ describe( 'PostController', () =>
 			//
 			for ( let i = 0; i < 100; i++ )
 			{
-				lastOneAddress = EtherWallet.createWalletFromMnemonic().address;
 				const NoStr = Number( i ).toString().padStart( 2, '0' );
 
 				//
-				//	create a new post with ether signature
+				//	create a new comment with ether signature
 				//
-				let newRecord = {
+				let newComment = {
 					timestamp : new Date().getTime(),
 					hash : '',
 					version : '1.0.0',
@@ -285,7 +368,10 @@ describe( 'PostController', () =>
 					sig : ``,
 					authorName : 'XING',
 					authorAvatar : 'https://avatars.githubusercontent.com/u/142800322?v=4',
-					body : 'Hello 1',
+					replyTo : 'HaSeme',
+					postHash : savedPost.hash,
+					postSnippet : `post name abc ${ NoStr }`,
+					body : `Hello 1 ${ NoStr }`,
 					pictures : [],
 					videos : [],
 					bitcoinPrice : '25888',
@@ -299,21 +385,27 @@ describe( 'PostController', () =>
 					createdAt: new Date(),
 					updatedAt: new Date()
 				};
-				newRecord.sig = await Web3Signer.signObject( walletObj.privateKey, newRecord, exceptedKeys );
-				newRecord.hash = await Web3Digester.hashObject( newRecord );
-				expect( newRecord.sig ).toBeDefined();
-				expect( typeof newRecord.sig ).toBe( 'string' );
-				expect( newRecord.sig.length ).toBeGreaterThanOrEqual( 0 );
+				newComment.sig = await Web3Signer.signObject( walletObj.privateKey, newComment, exceptedKeys );
+				newComment.hash = await Web3Digester.hashObject( newComment, exceptedKeys );
+				expect( newComment.sig ).toBeDefined();
+				expect( typeof newComment.sig ).toBe( 'string' );
+				expect( newComment.sig.length ).toBeGreaterThanOrEqual( 0 );
 
 				const response = await request( app )
-					.post( '/v1/post/add' )
+					.post( '/v1/comment/add' )
 					.send( {
-						wallet : walletObj.address, data : newRecord, sig : newRecord.sig
+						wallet : walletObj.address,
+						data : newComment,
+						sig : newComment.sig
 					} );
 				//console.log( response );
 				expect( response ).toBeDefined();
 				expect( response ).toHaveProperty( 'statusCode' );
 				expect( response ).toHaveProperty( '_body' );
+				if ( 200 !== response.statusCode )
+				{
+					console.log( response );
+				}
 				expect( response.statusCode ).toBe( 200 );
 				expect( response._body ).toBeDefined();
 				expect( response._body ).toHaveProperty( 'version' );
@@ -323,10 +415,10 @@ describe( 'PostController', () =>
 				expect( response._body ).toHaveProperty( 'data' );
 				expect( response._body.data ).toBeDefined();
 				expect( response._body.data ).toHaveProperty( 'hash' );
-				expect( response._body.data.hash ).toBe( newRecord.hash );
+				expect( response._body.data.hash ).toBe( newComment.hash );
 
 				//	...
-				savedPost = response._body.data;
+				savedComment = response._body.data;
 			}
 
 			//
@@ -335,10 +427,10 @@ describe( 'PostController', () =>
 			for ( let page = 1; page <= 10; page++ )
 			{
 				const response = await request( app )
-					.post( '/v1/post/queryList' )
+					.post( '/v1/comment/queryList' )
 					.send( {
 						wallet : walletObj.address,
-						data : { by : 'wallet', options : { pageNo : page, pageSize : 10 } },
+						data : { by : 'postHash', postHash : savedPost.hash, options : { pageNo : page, pageSize : 10 } },
 						sig : ''
 					} );
 				expect( response ).toBeDefined();
@@ -369,16 +461,15 @@ describe( 'PostController', () =>
 
 	describe( "Updating", () =>
 	{
-		it( "should update a record by wallet and address from database", async () =>
+		it( "should throw `updating is banned` when we try to update data", async () =>
 		{
 			let toBeUpdated = {
 				wallet : walletObj.address,
-				address : lastOneAddress,
-				name : `name-${ new Date().toLocaleString() }`,
-				avatar : `https://avatar-${ new Date().toLocaleString() }`,
+				authorName : 'XING',
+				authorAvatar : 'https://avatars.githubusercontent.com/u/142800322?v=4',
 				remark : `remark .... ${ new Date().toLocaleString() }`,
 			};
-			toBeUpdated.sig = await Web3Signer.signObject( walletObj.privateKey, toBeUpdated );
+			toBeUpdated.sig = await Web3Signer.signObject( walletObj.privateKey, toBeUpdated, exceptedKeys );
 			expect( toBeUpdated.sig ).toBeDefined();
 			expect( typeof toBeUpdated.sig ).toBe( 'string' );
 			expect( toBeUpdated.sig.length ).toBeGreaterThanOrEqual( 0 );
@@ -388,7 +479,7 @@ describe( 'PostController', () =>
 			expect( Array.isArray( requiredKeys ) ).toBeTruthy();
 
 			const updateResponse = await request( app )
-				.post( '/v1/post/update' )
+				.post( '/v1/comment/update' )
 				.send( {
 					wallet : walletObj.address,
 					data : toBeUpdated,
@@ -417,15 +508,15 @@ describe( 'PostController', () =>
 	{
 		it( `should logically delete a record by hash`, async () =>
 		{
-			expect( savedPost ).toBeDefined();
-			expect( SchemaUtil.isValidKeccak256Hash( savedPost.hash ) ).toBeTruthy();
+			expect( savedComment ).toBeDefined();
+			expect( SchemaUtil.isValidKeccak256Hash( savedComment.hash ) ).toBeTruthy();
 
 			let toBeDeleted = {
 				wallet : walletObj.address,
-				hash : savedPost.hash,
+				hash : savedComment.hash,
 				deleted : SchemaUtil.createHexStringObjectIdFromTime( 1 ),
 			};
-			toBeDeleted.sig = await Web3Signer.signObject( walletObj.privateKey, toBeDeleted );
+			toBeDeleted.sig = await Web3Signer.signObject( walletObj.privateKey, toBeDeleted, exceptedKeys );
 			expect( toBeDeleted.sig ).toBeDefined();
 			expect( typeof toBeDeleted.sig ).toBe( 'string' );
 			expect( toBeDeleted.sig.length ).toBeGreaterThanOrEqual( 0 );
@@ -435,7 +526,7 @@ describe( 'PostController', () =>
 			expect( Array.isArray( requiredKeys ) ).toBeTruthy();
 
 			const updateResponse = await request( app )
-				.post( '/v1/post/delete' )
+				.post( '/v1/comment/delete' )
 				.send( {
 					wallet : walletObj.address,
 					data : toBeDeleted,
@@ -459,10 +550,10 @@ describe( 'PostController', () =>
 
 			//	...
 			const queryOneResponse = await request( app )
-				.post( '/v1/post/queryOne' )
+				.post( '/v1/comment/queryOne' )
 				.send( {
 					wallet : walletObj.address,
-					data : { by : 'walletAndHash', hash : savedPost.hash },
+					data : { by : 'walletAndHash', hash : savedComment.hash },
 					sig : ''
 				} );
 			expect( queryOneResponse ).toBeDefined();

@@ -14,7 +14,7 @@ export function runHttpServer()
 	http.disable( 'x-powered-by' );
 	http.use( express.static( 'public' ) );	//	static files
 	http.use( express.json() );
-	http.use( express.urlencoded() );
+	http.use( express.urlencoded( { extended : true } ) );
 
 	//	...
 	appRoutes( http );
@@ -38,7 +38,7 @@ export function runHttpServer()
 		console.error( 'app error', appErr.stack );
 		console.error( 'on url', appCtx.req.url );
 		console.error( 'with headers', appCtx.req.headers );
-	});
+	} );
 
 	return listenServer;
 }
