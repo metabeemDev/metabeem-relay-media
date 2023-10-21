@@ -16,7 +16,6 @@ describe( 'FavoriteController', () =>
 	//
 	const mnemonic = 'olympic cradle tragic crucial exit annual silly cloth scale fine gesture ancient';
 	const walletObj = EtherWallet.createWalletFromMnemonic( mnemonic );
-	let lastOneAddress;
 	let savedPost;
 	let savedFavorite;
 

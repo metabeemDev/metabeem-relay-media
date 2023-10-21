@@ -3,7 +3,7 @@ import { app, runApp } from '../../src/http/http.js';
 import { describe, expect } from "@jest/globals";
 import { EtherWallet, Web3Digester, Web3Signer } from "web3id";
 import { ethers } from "ethers";
-import { ERefDataTypes, SchemaUtil } from "chaintalk-store";
+import { SchemaUtil } from "chaintalk-store";
 import { TestUtil } from "chaintalk-utils";
 
 const server = runApp();

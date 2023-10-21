@@ -5,7 +5,6 @@ import { EtherWallet, Web3Digester, Web3Signer } from "web3id";
 import { ethers } from "ethers";
 import { SchemaUtil } from "chaintalk-store";
 import { TestUtil } from "chaintalk-utils";
-import { last } from "lodash";
 
 const server = runApp();
 
@@ -17,7 +16,6 @@ describe( 'CommentController', () =>
 	//
 	const mnemonic = 'olympic cradle tragic crucial exit annual silly cloth scale fine gesture ancient';
 	const walletObj = EtherWallet.createWalletFromMnemonic( mnemonic );
-	let lastOneAddress;
 	let savedPost;
 	let savedComment;
 
