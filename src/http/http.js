@@ -1,12 +1,13 @@
 import express from "express";
 import { appRoutes } from './httpRoutes.js';
 import { TestUtil } from "chaintalk-utils";
+import { ParamUtils } from "../utils/ParamUtils.js";
 
 const http = express();
-const port = process.env.HTTP_PORT;
+const port = ParamUtils.getHttpPort();
 let listenServer = null;
 
-export function runHttpServer()
+export function runApp()
 {
 	/**
 	 *	configurations

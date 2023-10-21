@@ -16,7 +16,7 @@
 		"clean": "rm -rf dist",
 		"build": "npm run clean && tsc",
 		"test": "jest",
-		"dev": "node src/MetabeemRelayNode.js"
+		"dev": "node src/Relay.js"
 	},
 	"dependencies": {
 		"@babel/preset-typescript": "^7.22.15",

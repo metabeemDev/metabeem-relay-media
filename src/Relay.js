@@ -3,14 +3,14 @@ import minimist from "minimist";
 const argv = minimist( process.argv.slice( 2 ) );
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { bootstrappers } from './bootstrappers.js';
-import { runHttpServer } from "./http/http.js";
+import { runApp } from "./http/http.js";
 
-async function testHttpServer()
+async function runHttpServer()
 {
-	await runHttpServer();
+	await runApp();
 }
 
-async function testRelayNode()
+async function runRelayNode()
 {
 	const port = argv.port || process.env.PORT || undefined;
 	const peerIdFilename = argv.peerId || process.env.PEER_ID || undefined;
@@ -74,5 +74,5 @@ async function testRelayNode()
 }
 
 
-testHttpServer().then();
+runHttpServer().then();
 //testRelayNode().then();
