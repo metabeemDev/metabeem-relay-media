@@ -10,9 +10,9 @@ export class ParamUtils
 	{
 		let port;
 		if ( undefined !== argv &&
-		     undefined !== argv.port )
+		     undefined !== argv.http_port )
 		{
-			port = parseInt( argv.port );
+			port = parseInt( argv.http_port );
 			if ( this.isValidPortNumber( port ) )
 			{
 				return port;
@@ -20,9 +20,9 @@ export class ParamUtils
 		}
 		if ( undefined !== process &&
 		     undefined !== process.env &&
-		     undefined !== process.env.PORT )
+		     undefined !== process.env.HTTP_PORT )
 		{
-			port = parseInt( process.env.PORT );
+			port = parseInt( process.env.HTTP_PORT );
 			if ( this.isValidPortNumber( port ) )
 			{
 				return port;

@@ -9,12 +9,11 @@ services:
         ports:
             # 指定端口映射，类似 docker run 的 -p 选项，注意使用字符串形式
             # [local port]:[container port]
-            - "9911:9911"
             - "6612:6612"
-        volumes:
+        #volumes:
             #- ./deploy/etc/localtime:/etc/localtime:ro
             #- ./deploy/etc/timezone:/etc/timezone:ro
-            - ./deploy/etc/hosts:/etc/hosts:ro
+            #- ./deploy/etc/hosts:/etc/hosts:ro
         environment:
-            - spring.profiles.active=prod
-            - UPSTREAM_HOST=gateway.docker.internal
+            - HTTP_PORT=6612
+            - STORE_DATABASE_URL=mongodb://host.docker.internal:27017/metabeem

@@ -9,6 +9,8 @@ let listenServer = null;
 
 export function runApp()
 {
+	console.log( `process.env :`, process.env );
+
 	/**
 	 *	configurations
 	 */

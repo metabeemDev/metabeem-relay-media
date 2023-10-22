@@ -91,11 +91,15 @@ describe( 'ContactController', () =>
 			expect( typeof contact.sig ).toBe( 'string' );
 			expect( contact.sig.length ).toBeGreaterThanOrEqual( 0 );
 
+			const postData = {
+				wallet : walletObj.address, data : contact, sig : contact.sig
+			};
+			// console.log( `postData :`, postData );
+			// const jsonString = JSON.stringify( postData );
+			// console.log( `jsonString :`, jsonString );
 			const response = await request( app )
 				.post( '/v1/contact/add' )
-				.send( {
-					wallet : walletObj.address, data : contact, sig : contact.sig
-				} );
+				.send( postData );
 			expect( response ).toBeDefined();
 			expect( response ).toHaveProperty( 'statusCode' );
 			expect( response ).toHaveProperty( '_body' );
