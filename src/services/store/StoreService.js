@@ -9,7 +9,7 @@ import {
 	PostService, ProfileService, getDatabaseUrl
 } from "chaintalk-store";
 import { ServiceUtil } from "chaintalk-store";
-import { TypeUtil } from "chaintalk-utils";
+import { TestUtil, TypeUtil } from "chaintalk-utils";
 import { MessageBody } from "../../models/MessageBody.js";
 
 import 'dotenv/config.js'
@@ -70,6 +70,11 @@ export class StoreService
 					return reject( `invalid rpcMessage.body` );
 				}
 
+				if ( ! TestUtil.isTestEnv() )
+				{
+					console.log( `execute rpcMessage :`, rpcMessage );
+				}
+
 				let serviceObj = null;
 				switch ( rpcMessage.service )
 				{
@@ -103,6 +108,12 @@ export class StoreService
 						rpcMessage.body.data,
 						rpcMessage.body.sig
 					);
+
+					if ( ! TestUtil.isTestEnv() )
+					{
+						console.log( `execute serviceResult :`, serviceResult );
+					}
+
 					return resolve( serviceResult );
 				}
 
