@@ -1,5 +1,6 @@
 import { NetworkUtil } from "../../utils/NetworkUtil.js";
 import { ControllerPromise } from "./ControllerPromise.js";
+import { TestUtil } from "chaintalk-utils";
 
 /**
  * 	@class BusinessControllers
@@ -10,6 +11,11 @@ export class BusinessControllers
 	{
 		try
 		{
+			if ( ! TestUtil.isTestEnv() )
+			{
+				console.log( `BusinessControllers : [${ serviceName }].[${ methodName }]` );
+			}
+
 			const result = await ControllerPromise.process( serviceName, methodName, req, res );
 			res.send( NetworkUtil.getResponseObject( result ) );
 		}
