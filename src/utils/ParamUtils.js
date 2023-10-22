@@ -8,13 +8,25 @@ export class ParamUtils
 {
 	static getHttpPort()
 	{
-		if ( this.isValidPortNumber( argv.port ) )
+		let port;
+		if ( undefined !== argv &&
+		     undefined !== argv.port )
 		{
-			return argv.port;
+			port = parseInt( argv.port );
+			if ( this.isValidPortNumber( port ) )
+			{
+				return port;
+			}
 		}
-		if ( this.isValidPortNumber( process.env.PORT ) )
+		if ( undefined !== process &&
+		     undefined !== process.env &&
+		     undefined !== process.env.PORT )
 		{
-			return process.env.PORT;
+			port = parseInt( process.env.PORT );
+			if ( this.isValidPortNumber( port ) )
+			{
+				return port;
+			}
 		}
 
 		return this.getDefaultHttpPort();
