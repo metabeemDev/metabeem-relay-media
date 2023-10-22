@@ -34,6 +34,7 @@ export class StoreService
 		const databaseUrl = process.env.STORE_DATABASE_URL;
 		if ( TypeUtil.isNotEmptyString( databaseUrl ) )
 		{
+			console.log( `setup databaseUrl to: `, databaseUrl );
 			setDatabaseUrl( databaseUrl );
 		}
 	}
