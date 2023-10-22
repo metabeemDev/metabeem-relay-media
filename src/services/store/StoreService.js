@@ -6,7 +6,7 @@ import {
 	FavoriteService,
 	FollowerService,
 	LikeService,
-	PostService, ProfileService
+	PostService, ProfileService, getDatabaseUrl
 } from "chaintalk-store";
 import { ServiceUtil } from "chaintalk-store";
 import { TypeUtil } from "chaintalk-utils";
@@ -34,8 +34,8 @@ export class StoreService
 		const databaseUrl = process.env.STORE_DATABASE_URL;
 		if ( TypeUtil.isNotEmptyString( databaseUrl ) )
 		{
-			console.log( `setup databaseUrl to: `, databaseUrl );
 			setDatabaseUrl( databaseUrl );
+			console.log( `setup databaseUrl to: `, getDatabaseUrl() );
 		}
 	}
 
