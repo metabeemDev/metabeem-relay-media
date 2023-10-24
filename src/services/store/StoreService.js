@@ -11,6 +11,7 @@ import {
 import { ServiceUtil } from "chaintalk-store";
 import { TestUtil, TypeUtil } from "chaintalk-utils";
 import { MessageBody } from "../../models/MessageBody.js";
+import 'dotenv/config.js'
 
 
 /**
