@@ -38,8 +38,9 @@ const g_oCorsOptions		=
 export function appRoutes( app )
 {
 	//	enable CORS Pre-Flight for all routers
-	app.options( '*', cors( g_oCorsOptions ) );	//	include before other routes
-	app.use( cors( g_oCorsOptions ) );
+	//app.options( '*', cors( g_oCorsOptions ) );	//	include before other routes
+	//app.use( cors( g_oCorsOptions ) );
+	app.use( cors() );	//	allow all
 
 
 	//
