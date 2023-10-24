@@ -14,6 +14,6 @@ services:
             #- ./deploy/etc/localtime:/etc/localtime:ro
             #- ./deploy/etc/timezone:/etc/timezone:ro
             #- ./deploy/etc/hosts:/etc/hosts:ro
-        environment:
-            - HTTP_PORT=6612
-            - STORE_DATABASE_URL=mongodb://host.docker.internal:27017/metabeem
+        #environment:
+        #    - HTTP_PORT=6612
+        #    - STORE_DATABASE_URL=mongodb://host.docker.internal:27017/metabeem

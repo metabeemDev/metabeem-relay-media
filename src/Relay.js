@@ -5,6 +5,9 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { bootstrappers } from './bootstrappers.js';
 import { runApp } from "./http/http.js";
 
+import 'dotenv/config.js'
+
+
 async function runHttpServer()
 {
 	await runApp();

@@ -3,13 +3,15 @@ import { appRoutes } from './httpRoutes.js';
 import { TestUtil } from "chaintalk-utils";
 import { ParamUtils } from "../utils/ParamUtils.js";
 
+//	...
 const http = express();
-const port = ParamUtils.getHttpPort();
-let listenServer = null;
 
 export function runApp()
 {
 	console.log( `process.env :`, process.env );
+
+	//	read port
+	const port = ParamUtils.getHttpPort();
 
 	/**
 	 *	configurations
@@ -23,7 +25,7 @@ export function runApp()
 	appRoutes( http );
 
 	//	...
-	listenServer = http.listen( port, () =>
+	const listenServer = http.listen( port, () =>
 	{
 		if ( TestUtil.isTestEnv() )
 		{

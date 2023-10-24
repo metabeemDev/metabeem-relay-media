@@ -13,7 +13,6 @@ RUN npm install
 COPY . .
 
 #   expose the ports used by the application
-EXPOSE 9911
 EXPOSE 6612
 
 #   run application inside container

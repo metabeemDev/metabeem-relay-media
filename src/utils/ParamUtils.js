@@ -34,7 +34,7 @@ export class ParamUtils
 
 	static getDefaultHttpPort()
 	{
-		return 6612;
+		return 8848;
 	}
 
 	static isValidPortNumber( port )
