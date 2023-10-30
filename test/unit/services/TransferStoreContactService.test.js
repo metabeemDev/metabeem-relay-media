@@ -4,9 +4,9 @@ import { EtherWallet, Web3Signer, Web3Digester } from "web3id";
 import { MessageBody } from "../../../src/models/MessageBody";
 import { RpcMessage } from "../../../src/models/RpcMessage";
 import { TransferService } from "../../../src/services/TransferService";
-import { SchemaUtil } from "chaintalk-store";
-import { DatabaseConnection } from "chaintalk-store";
-import { TestUtil } from "chaintalk-utils";
+import { SchemaUtil } from "denetwork-store";
+import { DatabaseConnection } from "denetwork-store";
+import { TestUtil } from "denetwork-utils";
 
 
 /**

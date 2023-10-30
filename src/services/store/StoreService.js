@@ -7,9 +7,9 @@ import {
 	FollowerService,
 	LikeService,
 	PostService, ProfileService, getDatabaseUrl
-} from "chaintalk-store";
-import { ServiceUtil } from "chaintalk-store";
-import { TestUtil, TypeUtil } from "chaintalk-utils";
+} from "denetwork-store";
+import { ServiceUtil } from "denetwork-store";
+import { TestUtil, TypeUtil } from "denetwork-utils";
 import { MessageBody } from "../../models/MessageBody.js";
 import 'dotenv/config.js'
 
@@ -30,12 +30,18 @@ export class StoreService
 	 */
 	setup()
 	{
-		console.log( `will setup database config ...` )
+		if ( ! TestUtil.isTestEnv() )
+		{
+			console.log( `will setup database config ...` )
+		}
 		const databaseUrl = process.env.STORE_DATABASE_URL;
 		if ( TypeUtil.isNotEmptyString( databaseUrl ) )
 		{
 			setDatabaseUrl( databaseUrl );
-			console.log( `setup databaseUrl to: `, getDatabaseUrl() );
+			if ( ! TestUtil.isTestEnv() )
+			{
+				console.log( `setup databaseUrl to: `, getDatabaseUrl() );
+			}
 		}
 	}
 

@@ -16,18 +16,20 @@
 		"clean": "rm -rf dist",
 		"build": "npm run clean && tsc",
 		"test": "jest",
-		"dev": "node src/Relay.js"
+		"start": "node src/main.js"
 	},
 	"dependencies": {
 		"@babel/preset-typescript": "^7.22.15",
-		"chaintalk-relay": "^1.0.0",
-		"chaintalk-store": "^1.0.1",
-		"chaintalk-utils": "^1.0.35",
 		"cors": "^2.8.5",
+		"denetwork-queue": "^1.0.2",
+		"denetwork-relay": "^1.0.3",
+		"denetwork-store": "^1.0.22",
+		"denetwork-utils": "^1.0.35",
 		"dotenv": "^16.3.1",
 		"ethers": "^6.7.1",
 		"express": "^4.18.2",
 		"minimist": "^1.2.8",
+		"socket.io": "^4.7.2",
 		"uint8arrays": "^4.0.6",
 		"web3id": "^1.0.10"
 	},

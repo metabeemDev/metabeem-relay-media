@@ -1,12 +1,12 @@
 import request from "supertest";
-import { app, runApp } from '../../src/http/http.js';
+import { app, startServer } from '../../src/Server.js';
 import { describe, expect } from "@jest/globals";
 import { EtherWallet, Web3Digester, Web3Signer } from "web3id";
 import { ethers } from "ethers";
-import { SchemaUtil } from "chaintalk-store";
-import { TestUtil, TypeUtil } from "chaintalk-utils";
+import { SchemaUtil } from "denetwork-store";
+import { TestUtil, TypeUtil } from "denetwork-utils";
 
-const server = runApp();
+let server = null;
 
 
 describe( 'ProfileController', () =>
@@ -26,6 +26,11 @@ describe( 'ProfileController', () =>
 
 	beforeAll( async () =>
 	{
+		if ( null === server )
+		{
+			server = await startServer();
+		}
+
 		//	assert ...
 		expect( walletObj ).not.toBeNull();
 		expect( walletObj.mnemonic ).toBe( mnemonic );

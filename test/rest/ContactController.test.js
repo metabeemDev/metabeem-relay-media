@@ -1,12 +1,12 @@
 import request from "supertest";
-import { app, runApp } from '../../src/http/http.js';
+import { app, startServer } from '../../src/Server.js';
 import { describe, expect } from "@jest/globals";
 import { EtherWallet, Web3Digester, Web3Signer } from "web3id";
 import { ethers } from "ethers";
-import { SchemaUtil } from "chaintalk-store";
-import { TestUtil } from "chaintalk-utils";
+import { SchemaUtil } from "denetwork-store";
+import { TestUtil } from "denetwork-utils";
 
-const server = runApp();
+let server = null;
 
 
 describe( 'ContactController', () =>
@@ -21,6 +21,11 @@ describe( 'ContactController', () =>
 
 	beforeAll( async () =>
 	{
+		if ( null === server )
+		{
+			server = await startServer();
+		}
+
 		//	assert ...
 		expect( walletObj ).not.toBeNull();
 		expect( walletObj.mnemonic ).toBe( mnemonic );
@@ -352,6 +357,59 @@ describe( 'ContactController', () =>
 	{
 		it( "should update a record by wallet and address from database", async () =>
 		{
+			//	...
+			lastOneAddress = EtherWallet.createWalletFromMnemonic().address;
+
+			//
+			//	create a new contact with ether signature
+			//
+			let contact = {
+				timestamp : new Date().getTime(),
+				hash : '',
+				version : '1.0.0',
+				deleted : SchemaUtil.createHexStringObjectIdFromTime( 0 ),
+				wallet : walletObj.address,
+				address : lastOneAddress,
+				sig : ``,
+				name : `Sam`,
+				avatar : 'https://avatars.githubusercontent.com/u/142800322?v=4',
+				remark : 'no remark',
+				createdAt : new Date(),
+				updatedAt : new Date()
+			};
+			contact.sig = await Web3Signer.signObject( walletObj.privateKey, contact );
+			contact.hash = await Web3Digester.hashObject( contact );
+			expect( contact.sig ).toBeDefined();
+			expect( typeof contact.sig ).toBe( 'string' );
+			expect( contact.sig.length ).toBeGreaterThanOrEqual( 0 );
+
+			const postData = {
+				wallet : walletObj.address, data : contact, sig : contact.sig
+			};
+			// console.log( `postData :`, postData );
+			// const jsonString = JSON.stringify( postData );
+			// console.log( `jsonString :`, jsonString );
+			const response = await request( app )
+				.post( '/v1/contact/add' )
+				.send( postData );
+			expect( response ).toBeDefined();
+			expect( response ).toHaveProperty( 'statusCode' );
+			expect( response ).toHaveProperty( '_body' );
+			expect( response.statusCode ).toBe( 200 );
+			expect( response._body ).toBeDefined();
+			expect( response._body ).toHaveProperty( 'version' );
+			expect( response._body ).toHaveProperty( 'ts' );
+			expect( response._body ).toHaveProperty( 'tu' );
+			expect( response._body ).toHaveProperty( 'error' );
+			expect( response._body ).toHaveProperty( 'data' );
+			expect( response._body.data ).toBeDefined();
+			expect( response._body.data ).toHaveProperty( 'hash' );
+			expect( response._body.data.hash ).toBe( contact.hash );
+
+
+			//
+			//	update
+			//
 			let contactToBeUpdated = {
 				wallet : walletObj.address,
 				address : lastOneAddress,

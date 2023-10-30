@@ -1,6 +1,6 @@
 import { NetworkUtil } from "../../utils/NetworkUtil.js";
 import { ControllerPromise } from "./ControllerPromise.js";
-import { TestUtil } from "chaintalk-utils";
+import { TestUtil } from "denetwork-utils";
 
 /**
  * 	@class BusinessControllers
