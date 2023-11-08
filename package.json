@@ -21,6 +21,7 @@
 	"dependencies": {
 		"@babel/preset-typescript": "^7.22.15",
 		"cors": "^2.8.5",
+		"denetwork-chat": "^1.0.10",
 		"denetwork-queue": "^1.0.2",
 		"denetwork-relay": "^1.0.3",
 		"denetwork-store": "^1.0.22",

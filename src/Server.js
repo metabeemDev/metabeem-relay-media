@@ -6,16 +6,25 @@ import { appRoutes } from './http/httpRoutes.js';
 import { TestUtil } from "denetwork-utils";
 import { ParamUtils } from "./utils/ParamUtils.js";
 
+import { ChatServer } from "denetwork-chat";
+
+
 //	...
 const expressServer = express();
 const httpServer = http.createServer( expressServer );
 const socketServerOptions = {
-	cors: {
-		origin: "*",
-		credentials: true
+	cors : {
+		origin : "*",
+		credentials : true
 	}
 };
 const ioServer = new SocketIOServer( httpServer, socketServerOptions );
+
+/**
+ *	@type {ChatServer}
+ */
+let chatServer = null;
+
 
 
 /**
@@ -78,21 +87,40 @@ export function startServer()
 			//
 			//	WebSocket events
 			//
-			ioServer.on( 'connection', ( socket ) =>
+			const broadcastCallback = ( /** @type {string} */ serverId, /** @type {any} */ data, /** @type {any} */ options ) =>
 			{
-				console.log( 'Client connected to the WebSocket' );
-				socket.emit( "hello", "Your are welcome!" );
-
-				socket.on( 'disconnect', ( reason ) =>
-				{
-					console.log( `Client disconnected : ${ reason }` );
-				} );
-				socket.on( 'message', ( msg ) =>
-				{
-					console.log( `Received a chat message :`, msg );
-					ioServer.emit( 'message', msg );
-				} );
-			} );
+				console.log( `::broadcastCallback :`, serverId, data, options );
+				return true;
+			};
+			chatServer = new ChatServer( ioServer, null, broadcastCallback );
+			// ioServer.on( 'connection', ( socket ) =>
+			// {
+			// 	console.log( 'Client connected to the WebSocket' );
+			// 	socket.emit( "hello", "Your are welcome!" );
+			//
+			// 	//	This event is similar to disconnect but is fired a bit earlier,
+			// 	//	when the Socket#rooms set is not empty yet
+			// 	socket.on( "disconnecting", ( reason ) =>
+			// 	{
+			// 		for ( const room of socket.rooms )
+			// 		{
+			// 			if ( room !== socket.id )
+			// 			{
+			// 				//	user has left
+			// 				socket.to( room ).emit( "USER_LEFT", socket.id );
+			// 			}
+			// 		}
+			// 	} );
+			// 	socket.on( 'disconnect', ( reason ) =>
+			// 	{
+			// 		console.log( `Client disconnected : ${ reason }` );
+			// 	} );
+			// 	socket.on( 'message', ( msg ) =>
+			// 	{
+			// 		console.log( `Received a chat message :`, msg );
+			// 		ioServer.emit( 'message', msg );
+			// 	} );
+			// } );
 
 			//	...
 			resolve( listenServer );
