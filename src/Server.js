@@ -6,7 +6,7 @@ import { appRoutes } from './http/httpRoutes.js';
 import { TestUtil } from "denetwork-utils";
 import { ParamUtils } from "./utils/ParamUtils.js";
 
-import { ChatServer } from "denetwork-chat";
+import { ChatServer } from "denetwork-chat-server";
 
 
 //	...
