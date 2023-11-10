@@ -28,7 +28,19 @@
 {
   font-size: 12px;
   text-align: left;
+  display: flex;
 }
+.App-body .RoomColumn
+{
+  width: 100px;
+  background-color: pink;
+}
+.App-body .ChatColumn
+{
+  flex-grow: 1;
+}
+
+
 .RoomIdDiv
 {
   left: 0;
