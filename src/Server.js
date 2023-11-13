@@ -8,6 +8,9 @@ import { ParamUtils } from "./utils/ParamUtils.js";
 
 import { ChatServer } from "denetwork-chat-server";
 
+import { enable } from "@libp2p/logger";
+enable( 'denetwork-chat-server:SendMessageHandler' );
+
 
 //	...
 const expressServer = express();
