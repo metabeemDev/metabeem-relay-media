@@ -9,22 +9,22 @@ const g_arrCorsWhitelist	= [
 	'http://www.longforbitcoin.com',
 	'https://www.longforbitcoin.com',
 ];
-const g_oCorsOptions		=
-{
-	credentials	: true,
-	origin		: ( sOrigin, pfnCallback ) =>
+const g_oCorsOptions=
 	{
-		if ( undefined === sOrigin ||
-			-1 !== g_arrCorsWhitelist.indexOf( sOrigin ) )
+		credentials	: true,
+		origin		: ( sOrigin, pfnCallback ) =>
 		{
-			pfnCallback( null, true );
+			if ( undefined === sOrigin ||
+			     -1 !== g_arrCorsWhitelist.indexOf( sOrigin ) )
+			{
+				pfnCallback( null, true );
+			}
+			else
+			{
+				pfnCallback( new Error( 'Not allowed by CORS' ) );
+			}
 		}
-		else
-		{
-			pfnCallback( new Error( 'Not allowed by CORS' ) );
-		}
-	}
-};
+	};
 
 
 
@@ -47,6 +47,7 @@ export function appRoutes( app )
 	//	index
 	//
 	app.get( '/', IndexController.index );
+	app.post( '/', IndexController.index );
 
 	//
 	//	businesses

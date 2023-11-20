@@ -1,5 +1,5 @@
 import request from "supertest";
-import { app, startServer } from '../../src/Server.js';
+import { app, startHttpServer } from "../../src/http/http.js";
 import { describe, expect } from "@jest/globals";
 import { EtherWallet, Web3Digester, Web3Signer } from "web3id";
 import { ethers } from "ethers";
@@ -27,7 +27,7 @@ describe( 'CommentController', () =>
 	{
 		if ( null === server )
 		{
-			server = await startServer();
+			server = await startHttpServer();
 		}
 
 		//	assert ...
@@ -198,7 +198,7 @@ describe( 'CommentController', () =>
 			expect( savedComment ).toHaveProperty( 'hash' );
 			expect( savedComment ).toHaveProperty( 'sig' );
 			expect( SchemaUtil.isValidKeccak256Hash( savedComment.hash ) ).toBeTruthy();
-			expect( EtherWallet.isValidSignatureString( savedComment.sig ) ).toBeTruthy();
+			expect( Web3Signer.isValidSig( savedComment.sig ) ).toBeTruthy();
 
 			const response = await request( app )
 				.post( '/v1/comment/queryOne' )

@@ -1,4 +1,4 @@
-import { EtherWallet } from "web3id";
+import { EtherWallet, Web3Signer } from "web3id";
 
 export class MessageBody
 {
@@ -72,7 +72,7 @@ export class MessageBody
 	}
 	setSig( sig )
 	{
-		if ( ! EtherWallet.isValidSignatureString( sig ) )
+		if ( ! Web3Signer.isValidSig( sig ) )
 		{
 			return false;
 		}

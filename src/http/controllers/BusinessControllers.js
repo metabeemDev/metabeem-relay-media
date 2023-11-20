@@ -21,6 +21,8 @@ export class BusinessControllers
 		}
 		catch ( err )
 		{
+			const type = typeof err;
+
 			res.status( 400 ).send( NetworkUtil.getResponseObject( null, { error : err } ) );
 		}
 	}

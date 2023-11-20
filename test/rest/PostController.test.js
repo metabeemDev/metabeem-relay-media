@@ -1,5 +1,5 @@
 import request from "supertest";
-import { app, startServer } from '../../src/Server.js';
+import { app, startHttpServer } from "../../src/http/http.js";
 import { describe, expect } from "@jest/globals";
 import { EtherWallet, Web3Digester, Web3Signer } from "web3id";
 import { ethers } from "ethers";
@@ -27,7 +27,7 @@ describe( 'PostController', () =>
 	{
 		if ( null === server )
 		{
-			server = await startServer();
+			server = await startHttpServer();
 		}
 
 		//	assert ...

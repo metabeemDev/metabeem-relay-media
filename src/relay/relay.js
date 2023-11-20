@@ -1,9 +1,5 @@
 import minimist from "minimist";
-//import { RelayNode } from "denetwork-relay";
 const argv = minimist( process.argv.slice( 2 ) );
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { bootstrappers } from './bootstrappers.js';
-import { startServer } from "./Server.js";
 
 import 'dotenv/config.js'
 
@@ -11,7 +7,7 @@ import 'dotenv/config.js'
 /**
  *	@returns {Promise<unknown>}
  */
-export function startRelay()
+export function startP2pRelay()
 {
 	return new Promise( async ( resolve, reject ) =>
 	{

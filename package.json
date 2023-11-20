@@ -1,5 +1,5 @@
 {
-	"name": "metabeem-relay",
+	"name": "metabeem-relay-media",
 	"version": "1.0.0",
 	"description": "",
 	"keywords": [],
@@ -23,17 +23,15 @@
 		"@libp2p/logger": "^3.1.0",
 		"cors": "^2.8.5",
 		"debug": "^4.3.4",
-		"denetwork-chat-server": "^1.0.34",
 		"denetwork-relay": "^1.0.4",
 		"denetwork-store": "^1.0.22",
-		"denetwork-utils": "^1.0.35",
+		"denetwork-utils": "^1.0.47",
 		"dotenv": "^16.3.1",
 		"ethers": "^6.7.1",
 		"express": "^4.18.2",
 		"minimist": "^1.2.8",
-		"socket.io": "^4.7.2",
 		"uint8arrays": "^4.0.6",
-		"web3id": "^1.0.10"
+		"web3id": "^1.0.15"
 	},
 	"devDependencies": {
 		"@babel/preset-env": "^7.21.5",
