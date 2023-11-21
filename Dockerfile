@@ -16,4 +16,4 @@ COPY . .
 EXPOSE 6612
 
 #   run application inside container
-CMD [ "node", "src/relay.js" ]
+CMD [ "node", "src/main.js" ]
