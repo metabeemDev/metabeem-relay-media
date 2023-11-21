@@ -32,10 +32,10 @@ export class ControllerPromise
 				{
 					return reject( `invalid parameters` );
 				}
-				if ( ! EtherWallet.isValidAddress( req.body.wallet ) )
-				{
-					return reject( `invalid wallet` );
-				}
+				// if ( ! EtherWallet.isValidAddress( req.body.wallet ) )
+				// {
+				// 	return reject( `invalid wallet` );
+				// }
 
 				//	...
 				const rpcMessage = RpcMessage.buildStore({

@@ -3,7 +3,7 @@ import { app, startHttpServer } from "../../src/http/http.js";
 import { describe, expect } from "@jest/globals";
 import { EtherWallet, Web3Digester, Web3Signer } from "web3id";
 import { ethers } from "ethers";
-import { SchemaUtil } from "denetwork-store";
+import { ERefDataTypes, SchemaUtil } from "denetwork-store";
 import { TestUtil } from "denetwork-utils";
 
 let server = null;
@@ -19,8 +19,8 @@ describe( 'PostController', () =>
 	let lastOneAddress;
 	let savedPost;
 
-	const postStatisticKeys = SchemaUtil.getPrefixedKeys( `post`, 'statistic' );
-	const postExceptedKeys = Array.isArray( postStatisticKeys ) ? postStatisticKeys : [];
+	const statisticKeys = SchemaUtil.getPrefixedKeys( `post`, 'statistic' );
+	const exceptedKeys = Array.isArray( statisticKeys ) ? statisticKeys : [];
 
 
 	beforeAll( async () =>
@@ -87,7 +87,7 @@ describe( 'PostController', () =>
 				createdAt: new Date(),
 				updatedAt: new Date()
 			};
-			newRecord.sig = await Web3Signer.signObject( walletObj.privateKey, newRecord, postExceptedKeys );
+			newRecord.sig = await Web3Signer.signObject( walletObj.privateKey, newRecord, exceptedKeys );
 			newRecord.hash = await Web3Digester.hashObject( newRecord );
 			expect( newRecord.sig ).toBeDefined();
 			expect( typeof newRecord.sig ).toBe( 'string' );
@@ -129,7 +129,7 @@ describe( 'PostController', () =>
 
 	describe( "Query one", () =>
 	{
-		it( "should return a record by wallet and address from database", async () =>
+		it( "should return a record by wallet and address", async () =>
 		{
 			expect( savedPost ).toBeDefined();
 			expect( savedPost ).toHaveProperty( 'hash' );
@@ -186,6 +186,152 @@ describe( 'PostController', () =>
 
 		}, 60 * 10e3 );
 	} );
+
+	describe( "Query one with my favorite and like", () =>
+	{
+		it( "should return a record with key `_walletFavorited` and `_walletLiked`", async () =>
+		{
+			expect( savedPost ).toBeDefined();
+			expect( savedPost ).toHaveProperty( 'hash' );
+			expect( SchemaUtil.isValidKeccak256Hash( savedPost.hash ) ).toBeTruthy();
+
+			//
+			//	favorite this post
+			//
+			let favorite = {
+				timestamp : new Date().getTime(),
+				hash : '',
+				version : '1.0.0',
+				deleted : SchemaUtil.createHexStringObjectIdFromTime( 0 ),
+				wallet : walletObj.address,
+				refType : ERefDataTypes.post,
+				refHash : savedPost.hash,
+				refBody : '',
+				sig : ``,
+				remark : 'no remark',
+				createdAt: new Date(),
+				updatedAt: new Date()
+			};
+			favorite.sig = await Web3Signer.signObject( walletObj.privateKey, favorite, exceptedKeys );
+			favorite.hash = await Web3Digester.hashObject( favorite );
+			expect( favorite.sig ).toBeDefined();
+			expect( typeof favorite.sig ).toBe( 'string' );
+			expect( favorite.sig.length ).toBeGreaterThanOrEqual( 0 );
+
+			let response = await request( app )
+				.post( '/v1/favorite/add' )
+				.send( {
+					wallet : walletObj.address, data : favorite, sig : favorite.sig
+				} );
+			expect( response ).toBeDefined();
+			expect( response ).toHaveProperty( 'statusCode' );
+			expect( response ).toHaveProperty( '_body' );
+			if ( 200 !== response.statusCode )
+			{
+				console.log( response );
+			}
+			expect( response.statusCode ).toBe( 200 );
+
+
+			//
+			//	like this post
+			//
+			let like = {
+				timestamp : new Date().getTime(),
+				hash : '',
+				version : '1.0.0',
+				deleted : SchemaUtil.createHexStringObjectIdFromTime( 0 ),
+				wallet : walletObj.address,
+				refType : ERefDataTypes.post,
+				refHash : savedPost.hash,
+				refBody : '',
+				sig : ``,
+				remark : 'no remark',
+				createdAt: new Date(),
+				updatedAt: new Date()
+			};
+			like.sig = await Web3Signer.signObject( walletObj.privateKey, like, exceptedKeys );
+			like.hash = await Web3Digester.hashObject( like );
+			expect( like.sig ).toBeDefined();
+			expect( typeof like.sig ).toBe( 'string' );
+			expect( like.sig.length ).toBeGreaterThanOrEqual( 0 );
+
+			response = await request( app )
+				.post( '/v1/like/add' )
+				.send( {
+					wallet : walletObj.address, data : like, sig : like.sig
+				} );
+			expect( response ).toBeDefined();
+			expect( response ).toHaveProperty( 'statusCode' );
+			expect( response ).toHaveProperty( '_body' );
+			if ( 200 !== response.statusCode )
+			{
+				console.log( response );
+			}
+			expect( response.statusCode ).toBe( 200 );
+
+
+			//
+			//	query
+			//
+			response = await request( app )
+				.post( '/v1/post/queryOne' )
+				.send( {
+					wallet : walletObj.address,
+					data : { by : 'hash', hash : savedPost.hash },
+					sig : ''
+				} );
+			//
+			//    console.log( response );
+			//    {
+			//         version: 1,
+			//         ts: 1695779438193,
+			//         tu: 0,
+			//         error: null,
+			//         data: {
+			//           _id: '65138a693387c9c9679538b1',
+			//           timestamp: 1695779433060,
+			//           hash: '0x0c323308f59321e737018a47ea1fd22ad3571b1c603da27339b3d0ab129ad10c',
+			//           version: '1.0.0',
+			//           deleted: '000000000000000000000000',
+			//           wallet: '0xC8F60EaF5988aC37a2963aC5Fabe97f709d6b357',
+			//           sig: '0xa008a08da893e27d4eb53b4666bed0a77c2fa9fc8a532affa126b592ef5a1e7106714dad2c7df8a93ef902021be28d3f2dabb4b8970253f0aaff872eea483f961b',
+			//           name: 'Sam',
+			//           address: '0x67A8Eec8cc571D7B7Aa675eD9d649fA2B34D3995',
+			//           avatar: 'https://avatars.githubusercontent.com/u/142800322?v=4',
+			//           remark: 'no remark',
+			//           createdAt: '2023-09-27T01:50:33.060Z',
+			//           updatedAt: '2023-09-27T01:50:33.060Z',
+			//           __v: 0
+			//           _walletFavorited: true,
+			//           _walletLiked: true,
+			//    }
+			//
+			expect( response ).toBeDefined();
+			expect( response ).toHaveProperty( 'statusCode' );
+			expect( response ).toHaveProperty( '_body' );
+			expect( response.statusCode ).toBe( 200 );
+			expect( response._body ).toBeDefined();
+			expect( response._body ).toHaveProperty( 'version' );
+			expect( response._body ).toHaveProperty( 'ts' );
+			expect( response._body ).toHaveProperty( 'tu' );
+			expect( response._body ).toHaveProperty( 'error' );
+			expect( response._body ).toHaveProperty( 'data' );
+			expect( response._body.data ).toBeDefined();
+			expect( response._body.data ).toHaveProperty( 'wallet' );
+			expect( response._body.data ).toHaveProperty( 'hash' );
+			expect( response._body.data ).toHaveProperty( 'sig' );
+			expect( response._body.data.wallet ).toBe( walletObj.address );
+			expect( response._body.data.hash ).toBe( savedPost.hash );
+			expect( response._body.data.sig ).toBe( savedPost.sig );
+
+			expect( response._body.data ).toHaveProperty( '_walletFavorited' );
+			expect( response._body.data._walletFavorited ).toBeTruthy();
+
+			expect( response._body.data ).toHaveProperty( '_walletLiked' );
+			expect( response._body.data._walletLiked ).toBeTruthy();
+		});
+	});
 
 	describe( "Query list", () =>
 	{
@@ -259,6 +405,9 @@ describe( 'PostController', () =>
 					expect( item ).toHaveProperty( '_id' );
 					expect( item ).toHaveProperty( 'wallet' );
 					expect( item.wallet ).toBe( walletObj.address );
+
+					expect( item ).toHaveProperty( '_walletFavorited' );
+					expect( item ).toHaveProperty( '_walletLiked' );
 				}
 			}
 
@@ -303,7 +452,7 @@ describe( 'PostController', () =>
 					createdAt: new Date(),
 					updatedAt: new Date()
 				};
-				newRecord.sig = await Web3Signer.signObject( walletObj.privateKey, newRecord, postExceptedKeys );
+				newRecord.sig = await Web3Signer.signObject( walletObj.privateKey, newRecord, exceptedKeys );
 				newRecord.hash = await Web3Digester.hashObject( newRecord );
 				expect( newRecord.sig ).toBeDefined();
 				expect( typeof newRecord.sig ).toBe( 'string' );
@@ -361,8 +510,22 @@ describe( 'PostController', () =>
 				expect( response._body.data ).toHaveProperty( 'pageSize' );
 				expect( response._body.data ).toHaveProperty( 'list' );
 				expect( Array.isArray( response._body.data.list ) ).toBeTruthy();
+				expect( response._body.data.list.length ).toBeGreaterThan( 0 );
 				expect( response._body.data.total ).toBeGreaterThan( 0 );
 				expect( response._body.data.total ).toBeGreaterThanOrEqual( response._body.data.list.length );
+				if ( response._body.data.list )
+				{
+					for ( const item of response._body.data.list )
+					{
+						expect( item ).toBeDefined();
+						expect( item ).toHaveProperty( '_id' );
+						expect( item ).toHaveProperty( 'wallet' );
+						expect( item.wallet ).toBe( walletObj.address );
+
+						expect( item ).toHaveProperty( '_walletFavorited' );
+						expect( item ).toHaveProperty( '_walletLiked' );
+					}
+				}
 			}
 
 			//	wait for a while
