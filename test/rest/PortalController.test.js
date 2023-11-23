@@ -3,8 +3,9 @@ import { app, startHttpServer } from "../../src/http/http.js";
 import { describe, expect } from "@jest/globals";
 import { EtherWallet, Web3Digester, Web3Signer } from "web3id";
 import { ERefDataTypes, FavoriteService, FollowerService, LikeService, PostService, SchemaUtil } from "denetwork-store";
-import { TestUtil } from "denetwork-utils";
+import { TestUtil, TypeUtil } from "denetwork-utils";
 import _ from "lodash";
+import { isAddress } from "ethers";
 
 let server = null;
 
@@ -258,5 +259,397 @@ describe( 'PortalController', () =>
 			await TestUtil.sleep( 3 * 1000 );
 
 		}, 60 * 10e3 );
+
+
+		it( "should return recommended posts for each person", async () =>
+		{
+			for ( let i = 0; i < testUserList.length; i++ )
+			{
+				//	Alice, Bob, Mary
+				walletObj = EtherWallet.createWalletFromMnemonic( testUserList[ i ].mnemonic );
+				expect( walletObj ).not.toBeNull();
+				expect( EtherWallet.isValidPrivateKey( walletObj.privateKey ) ).toBeTruthy();
+				expect( EtherWallet.isValidPublicKey( walletObj.publicKey ) ).toBeTruthy();
+				expect( EtherWallet.isValidAddress( walletObj.address ) ).toBeTruthy();
+
+				const response = await request( app )
+					.post( '/v1/portal/queryList' )
+					.send( {
+						wallet : walletObj.address,
+						data : { by : 'recommendedPostList', options : { pageNo : 1, pageSize : 100, sort : { createdAt : 'desc' } } },
+						sig : ''
+					} );
+				expect( response ).toBeDefined();
+				expect( response ).toHaveProperty( 'statusCode' );
+				expect( response ).toHaveProperty( '_body' );
+				expect( response.statusCode ).toBe( 200 );
+				expect( response._body ).toBeDefined();
+				expect( response._body ).toHaveProperty( 'version' );
+				expect( response._body ).toHaveProperty( 'ts' );
+				expect( response._body ).toHaveProperty( 'tu' );
+				expect( response._body ).toHaveProperty( 'error' );
+				expect( response._body ).toHaveProperty( 'data' );
+				expect( response._body.data ).toBeDefined();
+				expect( response._body.data ).toHaveProperty( 'total' );
+				expect( response._body.data ).toHaveProperty( 'pageNo' );
+				expect( response._body.data ).toHaveProperty( 'pageSize' );
+				expect( response._body.data ).toHaveProperty( 'list' );
+				expect( Array.isArray( response._body.data.list ) ).toBeTruthy();
+				expect( response._body.data.list.length ).toBeGreaterThan( 0 );
+				expect( response._body.data.total ).toBeGreaterThan( 0 );
+				expect( response._body.data.total ).toBeGreaterThanOrEqual( response._body.data.list.length );
+				if ( response._body.data.list )
+				{
+					let walletFavorited = 0;
+					let walletLiked = 0;
+					let recordIndex = 0;
+					let previousPost = {};
+					for ( const item of response._body.data.list )
+					{
+						expect( item ).toBeDefined();
+						expect( item ).toHaveProperty( '_id' );
+						expect( item ).toHaveProperty( 'wallet' );
+
+						expect( item ).toHaveProperty( '_walletFavorited' );
+						expect( item ).toHaveProperty( '_walletLiked' );
+
+						//	...
+						walletFavorited += Number( !! item[ `_walletFavorited` ] );
+						walletLiked += Number( !! item[ `_walletLiked` ] );
+
+						/************************************************************
+						 *
+						 * 	check the sorting of posts
+						 *
+						 * ************************************************************/
+						if ( recordIndex > 0 )
+						{
+							expect( previousPost ).toBeDefined();
+							expect( previousPost.timestamp ).not.toBeNaN();
+							expect( previousPost.timestamp ).toBeGreaterThan( 0 );
+							expect( previousPost.timestamp ).toBeGreaterThan( item.timestamp );
+							expect( previousPost.timestamp ).toBeLessThan( new Date().getTime() );
+							expect( item.timestamp - previousPost.timestamp ).toBeLessThanOrEqual( 30 );
+						}
+
+						//	save previous post
+						previousPost = _.cloneDeep( item );
+						recordIndex ++;
+					}
+
+					expect( walletFavorited ).toBeGreaterThan( 0 );
+					expect( walletLiked ).toBeGreaterThan( 0 );
+				}
+			}
+		});
 	} );
+
+
+	describe( "Test followee portal", () =>
+	{
+		it( "should clear following relationship", async () =>
+		{
+			const followerService = new FollowerService();
+			await followerService.clearAll();
+
+			for ( const testUser of testUserList )
+			{
+				const userWalletObj = EtherWallet.createWalletFromMnemonic( testUser.mnemonic );
+				expect( userWalletObj ).not.toBeNull();
+				expect( EtherWallet.isValidPrivateKey( userWalletObj.privateKey ) ).toBeTruthy();
+				expect( EtherWallet.isValidPublicKey( userWalletObj.publicKey ) ).toBeTruthy();
+				expect( EtherWallet.isValidAddress( userWalletObj.address ) ).toBeTruthy();
+
+				const results = await followerService.queryList( userWalletObj.address, { by : 'wallet' } );
+				expect( results ).toHaveProperty( 'total' );
+				expect( results ).toHaveProperty( 'pageNo' );
+				expect( results ).toHaveProperty( 'pageSize' );
+				expect( results ).toHaveProperty( 'list' );
+				expect( results.total ).toBe( 0 );
+				expect( Array.isArray( results.list ) ).toBeTruthy();
+				expect( results.list.length ).toBe( 0 );
+			}
+		} );
+
+		it( "should make Bob following Alice", async () =>
+		{
+			//
+			//	create role instances
+			//
+			const aliceWalletObj = EtherWallet.createWalletFromMnemonic( testUserList[ testUserAlice ].mnemonic );
+			expect( aliceWalletObj ).not.toBeNull();
+			expect( EtherWallet.isValidPrivateKey( aliceWalletObj.privateKey ) ).toBeTruthy();
+			expect( EtherWallet.isValidPublicKey( aliceWalletObj.publicKey ) ).toBeTruthy();
+			expect( EtherWallet.isValidAddress( aliceWalletObj.address ) ).toBeTruthy();
+
+			const bobWalletObj = EtherWallet.createWalletFromMnemonic( testUserList[ testUserBob ].mnemonic );
+			expect( bobWalletObj ).not.toBeNull();
+			expect( EtherWallet.isValidPrivateKey( bobWalletObj.privateKey ) ).toBeTruthy();
+			expect( EtherWallet.isValidPublicKey( bobWalletObj.publicKey ) ).toBeTruthy();
+			expect( EtherWallet.isValidAddress( bobWalletObj.address ) ).toBeTruthy();
+
+			//
+			//	Make Bob following Alice
+			//
+			let bobFollowAlice = {
+				timestamp : new Date().getTime(),
+				hash : '',
+				version : '1.0.0',
+				deleted : SchemaUtil.createHexStringObjectIdFromTime( 0 ),
+				wallet : bobWalletObj.address,		//	follower
+				address : aliceWalletObj.address,	//	followee
+				sig : ``,
+				name : `Sam`,
+				avatar : 'https://avatars.githubusercontent.com/u/142800322?v=4',
+				remark : 'no remark',
+				createdAt: new Date(),
+				updatedAt: new Date()
+			};
+			bobFollowAlice.sig = await Web3Signer.signObject( bobWalletObj.privateKey, bobFollowAlice );
+			bobFollowAlice.hash = await Web3Digester.hashObject( bobFollowAlice );
+			expect( bobFollowAlice.sig ).toBeDefined();
+			expect( typeof bobFollowAlice.sig ).toBe( 'string' );
+			expect( bobFollowAlice.sig.length ).toBeGreaterThanOrEqual( 0 );
+
+			const response = await request( app )
+				.post( '/v1/follower/add' )
+				.send( {
+					wallet : bobWalletObj.address, data : bobFollowAlice, sig : bobFollowAlice.sig
+				} );
+			expect( response ).toBeDefined();
+			expect( response ).toHaveProperty( 'statusCode' );
+			expect( response ).toHaveProperty( '_body' );
+			if ( 200 !== response.statusCode )
+			{
+				console.log( response );
+			}
+			expect( response.statusCode ).toBe( 200 );
+		});
+		it( "should make Mary following Alice", async () =>
+		{
+			//
+			//	create role instances
+			//
+			const aliceWalletObj = EtherWallet.createWalletFromMnemonic( testUserList[ testUserAlice ].mnemonic );
+			expect( aliceWalletObj ).not.toBeNull();
+			expect( EtherWallet.isValidPrivateKey( aliceWalletObj.privateKey ) ).toBeTruthy();
+			expect( EtherWallet.isValidPublicKey( aliceWalletObj.publicKey ) ).toBeTruthy();
+			expect( EtherWallet.isValidAddress( aliceWalletObj.address ) ).toBeTruthy();
+
+			const maryWalletObj = EtherWallet.createWalletFromMnemonic( testUserList[ testUserMary ].mnemonic );
+			expect( maryWalletObj ).not.toBeNull();
+			expect( EtherWallet.isValidPrivateKey( maryWalletObj.privateKey ) ).toBeTruthy();
+			expect( EtherWallet.isValidPublicKey( maryWalletObj.publicKey ) ).toBeTruthy();
+			expect( EtherWallet.isValidAddress( maryWalletObj.address ) ).toBeTruthy();
+
+			//
+			//	Make Mary follow Alice
+			//
+			let maryFollowAlice = {
+				timestamp : new Date().getTime(),
+				hash : '',
+				version : '1.0.0',
+				deleted : SchemaUtil.createHexStringObjectIdFromTime( 0 ),
+				wallet : maryWalletObj.address,		//	follower
+				address : aliceWalletObj.address,	//	followee
+				sig : ``,
+				name : `Sam`,
+				avatar : 'https://avatars.githubusercontent.com/u/142800322?v=4',
+				remark : 'no remark',
+				createdAt: new Date(),
+				updatedAt: new Date()
+			};
+			maryFollowAlice.sig = await Web3Signer.signObject( maryWalletObj.privateKey, maryFollowAlice );
+			maryFollowAlice.hash = await Web3Digester.hashObject( maryFollowAlice );
+			expect( maryFollowAlice.sig ).toBeDefined();
+			expect( typeof maryFollowAlice.sig ).toBe( 'string' );
+			expect( maryFollowAlice.sig.length ).toBeGreaterThanOrEqual( 0 );
+
+			const response = await request( app )
+				.post( '/v1/follower/add' )
+				.send( {
+					wallet : maryWalletObj.address, data : maryFollowAlice, sig : maryFollowAlice.sig
+				} );
+			expect( response ).toBeDefined();
+			expect( response ).toHaveProperty( 'statusCode' );
+			expect( response ).toHaveProperty( '_body' );
+			if ( 200 !== response.statusCode )
+			{
+				console.log( response );
+			}
+			expect( response.statusCode ).toBe( 200 );
+		});
+
+		it( "should create some posts in the persona of Alice", async () =>
+		{
+			//
+			//	create many posts
+			//
+			const postService = new PostService();
+			await postService.clearAll();
+
+			walletObj = EtherWallet.createWalletFromMnemonic( testUserList[ testUserAlice ].mnemonic );
+			expect( walletObj ).not.toBeNull();
+			expect( EtherWallet.isValidPrivateKey( walletObj.privateKey ) ).toBeTruthy();
+			expect( EtherWallet.isValidPublicKey( walletObj.publicKey ) ).toBeTruthy();
+			expect( EtherWallet.isValidAddress( walletObj.address ) ).toBeTruthy();
+
+			for ( let i = 0; i < 500; i ++ )
+			{
+				let post = {
+					timestamp : new Date().getTime(),
+					hash : '',
+					version : '1.0.0',
+					deleted : SchemaUtil.createHexStringObjectIdFromTime( 0 ),
+					wallet : walletObj.address,
+					sig : ``,
+					authorName : 'XING',
+					authorAvatar : 'https://avatars.githubusercontent.com/u/142800322?v=4',
+					body : 'Hello 1',
+					pictures : [],
+					videos : [],
+					bitcoinPrice : '25888',
+					statisticView : 0,
+					statisticRepost : 0,
+					statisticQuote : 0,
+					statisticLike : 0,
+					statisticFavorite : 0,
+					statisticReply : 0,
+					remark : 'no ...',
+					createdAt : new Date(),
+					updatedAt : new Date()
+				};
+				post.sig = await Web3Signer.signObject( walletObj.privateKey, post, exceptedKeys );
+				post.hash = await Web3Digester.hashObject( post );
+				expect( post.sig ).toBeDefined();
+				expect( typeof post.sig ).toBe( 'string' );
+				expect( post.sig.length ).toBeGreaterThanOrEqual( 0 );
+
+				let response = await request( app )
+					.post( '/v1/post/add' )
+					.send( {
+						wallet : walletObj.address, data : post, sig : post.sig
+					} );
+				//console.log( response );
+				expect( response ).toBeDefined();
+				expect( response ).toHaveProperty( 'statusCode' );
+				expect( response ).toHaveProperty( '_body' );
+				expect( response.statusCode ).toBe( 200 );
+				expect( response._body ).toBeDefined();
+				expect( response._body ).toHaveProperty( 'version' );
+				expect( response._body ).toHaveProperty( 'ts' );
+				expect( response._body ).toHaveProperty( 'tu' );
+				expect( response._body ).toHaveProperty( 'error' );
+				expect( response._body ).toHaveProperty( 'data' );
+				expect( response._body.data ).toBeDefined();
+				expect( response._body.data ).toHaveProperty( 'hash' );
+				expect( response._body.data ).toHaveProperty( 'wallet' );
+				expect( response._body.data.hash ).toBe( post.hash );
+				expect( response._body.data.wallet ).toBe( post.wallet );
+
+				//	...
+				savedPost = _.cloneDeep( response._body.data );
+
+				await TestUtil.sleep(new Date().getTime() % 30 );
+			}
+
+			//	wait for a while
+			await TestUtil.sleep(3 * 1000 );
+
+		}, 60 * 10e3 );
+
+
+		it( "should return the followee posts in the persona of Bob and Mary", async () =>
+		{
+			//
+			//	create role instances
+			//
+			const aliceWalletObj = EtherWallet.createWalletFromMnemonic( testUserList[ testUserAlice ].mnemonic );
+			expect( aliceWalletObj ).not.toBeNull();
+			expect( EtherWallet.isValidPrivateKey( aliceWalletObj.privateKey ) ).toBeTruthy();
+			expect( EtherWallet.isValidPublicKey( aliceWalletObj.publicKey ) ).toBeTruthy();
+			expect( EtherWallet.isValidAddress( aliceWalletObj.address ) ).toBeTruthy();
+
+			//	...
+			const mnemonicsBobAndMary = [
+				testUserList[ testUserBob ].mnemonic,
+				testUserList[ testUserMary ].mnemonic,
+			];
+			for ( const mnemonic of mnemonicsBobAndMary )
+			{
+				walletObj = EtherWallet.createWalletFromMnemonic( mnemonic );
+				expect( walletObj ).not.toBeNull();
+				expect( EtherWallet.isValidPrivateKey( walletObj.privateKey ) ).toBeTruthy();
+				expect( EtherWallet.isValidPublicKey( walletObj.publicKey ) ).toBeTruthy();
+				expect( EtherWallet.isValidAddress( walletObj.address ) ).toBeTruthy();
+
+				const response = await request( app )
+					.post( '/v1/portal/queryList' )
+					.send( {
+						wallet : walletObj.address,
+						data : { by : 'followeePostList', options : { pageNo : 1, pageSize : 100, sort : { createdAt : 'desc' } } },
+						sig : ''
+					} );
+				expect( response ).toBeDefined();
+				expect( response ).toHaveProperty( 'statusCode' );
+				expect( response ).toHaveProperty( '_body' );
+				expect( response.statusCode ).toBe( 200 );
+				expect( response._body ).toBeDefined();
+				expect( response._body ).toHaveProperty( 'version' );
+				expect( response._body ).toHaveProperty( 'ts' );
+				expect( response._body ).toHaveProperty( 'tu' );
+				expect( response._body ).toHaveProperty( 'error' );
+				expect( response._body ).toHaveProperty( 'data' );
+				expect( response._body.data ).toBeDefined();
+				expect( response._body.data ).toHaveProperty( 'total' );
+				expect( response._body.data ).toHaveProperty( 'pageNo' );
+				expect( response._body.data ).toHaveProperty( 'pageSize' );
+				expect( response._body.data ).toHaveProperty( 'list' );
+				expect( Array.isArray( response._body.data.list ) ).toBeTruthy();
+				expect( response._body.data.list.length ).toBeGreaterThan( 0 );
+				expect( response._body.data.total ).toBeGreaterThan( 0 );
+				expect( response._body.data.total ).toBeGreaterThanOrEqual( response._body.data.list.length );
+				if ( response._body.data.list )
+				{
+					let recordIndex = 0;
+					let previousPost = {};
+					for ( const item of response._body.data.list )
+					{
+						expect( item ).toBeDefined();
+						expect( item ).toHaveProperty( '_id' );
+						expect( item ).toHaveProperty( 'wallet' );
+
+						expect( item ).toHaveProperty( '_walletFavorited' );
+						expect( item ).toHaveProperty( '_walletLiked' );
+
+						if ( recordIndex > 0 )
+						{
+							expect( previousPost ).toBeDefined();
+							expect( previousPost.timestamp ).not.toBeNaN();
+							expect( previousPost.timestamp ).toBeGreaterThan( 0 );
+							expect( previousPost.timestamp ).toBeGreaterThan( item.timestamp );
+							expect( previousPost.timestamp ).toBeLessThan( new Date().getTime() );
+							expect( item.timestamp - previousPost.timestamp ).toBeLessThanOrEqual( 30 );
+						}
+
+						/************************************************************
+						 *
+						 * 	THE KEY VERIFICATION HERE
+						 *
+						 * 	check the following relationship
+						 *
+						 * ************************************************************/
+						expect( item ).toHaveProperty( `wallet` );
+						expect( isAddress( item.wallet ) ).toBeTruthy();
+						expect( TypeUtil.isStringEqualNoCase( item.wallet, aliceWalletObj.address ) ).toBeTruthy();
+
+						//	save previous post
+						previousPost = _.cloneDeep( item );
+						recordIndex ++;
+					}
+				}
+			}
+
+		}, 60 * 10e3 );
+	});
 } );

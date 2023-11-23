@@ -50,20 +50,20 @@ export function appRoutes( app )
 	app.get( '/', IndexController.index );
 	app.post( '/', IndexController.index );
 
-	//
-	//	portal
-	//
-	const portalMethods = [ 'queryRecommendedPostList', 'queryFolloweePostList' ];
-	for ( const method of portalMethods )
-	{
-		const service = PortalController.serviceName;
-		app.post( `/v1/${ service }/${ method }`, BusinessControllers.all.bind(null, service, method ) );
-	}
+	// //
+	// //	portal
+	// //
+	// const portalMethods = [ 'queryRecommendedPostList', 'queryFolloweePostList' ];
+	// for ( const method of portalMethods )
+	// {
+	// 	const service = PortalController.serviceName;
+	// 	app.post( `/v1/${ service }/${ method }`, BusinessControllers.all.bind(null, service, method ) );
+	// }
 
 	//
 	//	businesses
 	//
-	const serviceNames = [ 'comment', 'contact', 'favorite', 'follower', 'like', 'post', 'profile' ];
+	const serviceNames = [ 'comment', 'contact', 'favorite', 'follower', 'like', 'post', 'profile', 'portal' ];
 	const methodNames = [ 'add', 'update', 'updateFor', 'delete', 'queryOne', 'queryList' ];
 	for ( const service of serviceNames )
 	{
