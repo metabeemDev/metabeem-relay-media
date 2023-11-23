@@ -1,12 +1,15 @@
 import { RpcMessage } from "../../models/RpcMessage.js";
 import {
+	getDatabaseUrl,
 	setDatabaseUrl,
 	CommentService,
 	ContactService,
 	FavoriteService,
 	FollowerService,
 	LikeService,
-	PostService, ProfileService, getDatabaseUrl
+	PostService,
+	ProfileService,
+	PortalService,
 } from "denetwork-store";
 import { ServiceUtil } from "denetwork-store";
 import { TestUtil, TypeUtil } from "denetwork-utils";
@@ -104,6 +107,9 @@ export class StoreService
 						break;
 					case 'profile' :
 						serviceObj = new ProfileService();
+						break;
+					case 'portal' :
+						serviceObj = new PortalService();
 						break;
 				}
 				if ( serviceObj )

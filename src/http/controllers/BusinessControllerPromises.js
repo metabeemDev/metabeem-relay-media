@@ -8,7 +8,7 @@ import { TransferService } from "../../services/TransferService.js";
 const transferService = new TransferService();
 
 
-export class ControllerPromise
+export class BusinessControllerPromises
 {
 	static process( serviceName, methodName, req, res )
 	{

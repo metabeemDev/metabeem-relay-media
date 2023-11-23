@@ -1,6 +1,9 @@
 import { NetworkUtil } from "../../utils/NetworkUtil.js";
 
 
+/**
+ * 	@class
+ */
 export class IndexController
 {
 	static async index( req, res )

@@ -1,5 +1,5 @@
 import { NetworkUtil } from "../../utils/NetworkUtil.js";
-import { ControllerPromise } from "./ControllerPromise.js";
+import { BusinessControllerPromises } from "./BusinessControllerPromises.js";
 import { TestUtil } from "denetwork-utils";
 
 /**
@@ -16,13 +16,12 @@ export class BusinessControllers
 				console.log( `BusinessControllers : [${ serviceName }].[${ methodName }]` );
 			}
 
-			const result = await ControllerPromise.process( serviceName, methodName, req, res );
+			const result = await BusinessControllerPromises.process( serviceName, methodName, req, res );
 			res.send( NetworkUtil.getResponseObject( result ) );
 		}
 		catch ( err )
 		{
 			const type = typeof err;
-
 			res.status( 400 ).send( NetworkUtil.getResponseObject( null, { error : err } ) );
 		}
 	}

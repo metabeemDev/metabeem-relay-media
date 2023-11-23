@@ -1,6 +1,7 @@
 import cors from 'cors';
 import { BusinessControllers } from "./controllers/BusinessControllers.js";
 import { IndexController } from "./controllers/IndexController.js";
+import { PortalController } from "./controllers/PortalController.js";
 
 const g_arrCorsWhitelist	= [
 	'http://127.0.0.1:3009',
@@ -48,6 +49,16 @@ export function appRoutes( app )
 	//
 	app.get( '/', IndexController.index );
 	app.post( '/', IndexController.index );
+
+	//
+	//	portal
+	//
+	const portalMethods = [ 'queryRecommendedPostList', 'queryFolloweePostList' ];
+	for ( const method of portalMethods )
+	{
+		const service = PortalController.serviceName;
+		app.post( `/v1/${ service }/${ method }`, BusinessControllers.all.bind(null, service, method ) );
+	}
 
 	//
 	//	businesses

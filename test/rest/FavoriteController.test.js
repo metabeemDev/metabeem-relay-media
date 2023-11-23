@@ -20,7 +20,7 @@ describe( 'FavoriteController', () =>
 	let savedFavorite;
 
 	const postStatisticKeys = SchemaUtil.getPrefixedKeys( `post`, 'statistic' );
-	const postExceptedKeys = Array.isArray( postStatisticKeys ) ? postStatisticKeys : [];
+	const exceptedKeys = Array.isArray( postStatisticKeys ) ? postStatisticKeys : [];
 
 
 	beforeAll( async () =>
@@ -64,7 +64,7 @@ describe( 'FavoriteController', () =>
 			createdAt: new Date(),
 			updatedAt: new Date()
 		};
-		newPost.sig = await Web3Signer.signObject( walletObj.privateKey, newPost, postExceptedKeys );
+		newPost.sig = await Web3Signer.signObject( walletObj.privateKey, newPost, exceptedKeys );
 		newPost.hash = await Web3Digester.hashObject( newPost );
 		expect( newPost.sig ).toBeDefined();
 		expect( typeof newPost.sig ).toBe( 'string' );
@@ -138,7 +138,7 @@ describe( 'FavoriteController', () =>
 				createdAt: new Date(),
 				updatedAt: new Date()
 			};
-			favorite.sig = await Web3Signer.signObject( walletObj.privateKey, favorite, postExceptedKeys );
+			favorite.sig = await Web3Signer.signObject( walletObj.privateKey, favorite, exceptedKeys );
 			favorite.hash = await Web3Digester.hashObject( favorite );
 			expect( favorite.sig ).toBeDefined();
 			expect( typeof favorite.sig ).toBe( 'string' );
@@ -360,7 +360,7 @@ describe( 'FavoriteController', () =>
 					createdAt: new Date(),
 					updatedAt: new Date()
 				};
-				newPost.sig = await Web3Signer.signObject( walletObj.privateKey, newPost, postExceptedKeys );
+				newPost.sig = await Web3Signer.signObject( walletObj.privateKey, newPost, exceptedKeys );
 				newPost.hash = await Web3Digester.hashObject( newPost );
 				expect( newPost.sig ).toBeDefined();
 				expect( typeof newPost.sig ).toBe( 'string' );
@@ -412,8 +412,8 @@ describe( 'FavoriteController', () =>
 					createdAt: new Date(),
 					updatedAt: new Date()
 				};
-				favorite.sig = await Web3Signer.signObject( walletObj.privateKey, favorite, postExceptedKeys );
-				favorite.hash = await Web3Digester.hashObject( favorite, postExceptedKeys );
+				favorite.sig = await Web3Signer.signObject( walletObj.privateKey, favorite, exceptedKeys );
+				favorite.hash = await Web3Digester.hashObject( favorite, exceptedKeys );
 				expect( favorite.sig ).toBeDefined();
 				expect( typeof favorite.sig ).toBe( 'string' );
 				expect( favorite.sig.length ).toBeGreaterThanOrEqual( 0 );
@@ -497,7 +497,7 @@ describe( 'FavoriteController', () =>
 				refBody : '',
 				remark : `remark .... ${ new Date().toLocaleString() }`,
 			};
-			toBeUpdated.sig = await Web3Signer.signObject( walletObj.privateKey, toBeUpdated, postExceptedKeys );
+			toBeUpdated.sig = await Web3Signer.signObject( walletObj.privateKey, toBeUpdated, exceptedKeys );
 			expect( toBeUpdated.sig ).toBeDefined();
 			expect( typeof toBeUpdated.sig ).toBe( 'string' );
 			expect( toBeUpdated.sig.length ).toBeGreaterThanOrEqual( 0 );
@@ -544,7 +544,7 @@ describe( 'FavoriteController', () =>
 				hash : savedFavorite.hash,
 				deleted : SchemaUtil.createHexStringObjectIdFromTime( 1 ),
 			};
-			toBeDeleted.sig = await Web3Signer.signObject( walletObj.privateKey, toBeDeleted, postExceptedKeys );
+			toBeDeleted.sig = await Web3Signer.signObject( walletObj.privateKey, toBeDeleted, exceptedKeys );
 			expect( toBeDeleted.sig ).toBeDefined();
 			expect( typeof toBeDeleted.sig ).toBe( 'string' );
 			expect( toBeDeleted.sig.length ).toBeGreaterThanOrEqual( 0 );
