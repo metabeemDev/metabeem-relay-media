@@ -1,7 +1,6 @@
 import cors from 'cors';
 import { BusinessControllers } from "./controllers/BusinessControllers.js";
 import { IndexController } from "./controllers/IndexController.js";
-import { PortalController } from "./controllers/PortalController.js";
 
 const g_arrCorsWhitelist	= [
 	'http://127.0.0.1:3009',

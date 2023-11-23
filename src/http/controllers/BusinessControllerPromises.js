@@ -1,5 +1,4 @@
 import { TypeUtil } from "denetwork-utils";
-import { EtherWallet } from "web3id";
 import { RpcMessage } from "../../models/RpcMessage.js";
 import { MessageBody } from "../../models/MessageBody.js";
 import { TransferService } from "../../services/TransferService.js";

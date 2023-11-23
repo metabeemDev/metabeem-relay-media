@@ -38,7 +38,6 @@ export const testUserMary = 2;
 describe( 'PortalController', () =>
 {
 	let walletObj;
-	let lastOneAddress;
 	let savedPost;
 
 	const statisticKeys = SchemaUtil.getPrefixedKeys( `post`, 'statistic' );
