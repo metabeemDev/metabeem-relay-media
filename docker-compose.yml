@@ -1,9 +1,8 @@
 version: '3'
 services:
+    #   App Docker
     metabeemRelayMedia:                       # Service Name
         container_name: metabeem-relay-media
-        extra_hosts:
-            - "host.docker.internal:host-gateway"
         hostname: metabeem-relay-media
         build:
             context: .
@@ -17,6 +16,22 @@ services:
             - ./deploy/etc/hosts:/etc/hosts:ro
             #- ./deploy/etc/localtime:/etc/localtime:ro
             #- ./deploy/etc/timezone:/etc/timezone:ro
-        #environment:
-        #    - HTTP_PORT=6612
-        #    - STORE_DATABASE_URL=mongodb://host.docker.internal:27017/metabeem
+
+#        environment:
+#            - REDIS_HOST=redis
+#            - REDIS_PORT=6379
+#            - NODE_ENV=production
+#        depends_on:
+#            redis:
+#                condition: service_healthy
+#        links:
+#            - redis
+#
+#    #   Redis Docker
+#    redis:
+#        image: redis:latest
+#        healthcheck:
+#            test: ["CMD", "redis-cli", "ping"]
+#            interval: 1s
+#            timeout: 2s
+#            retries: 10
