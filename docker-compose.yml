@@ -2,6 +2,8 @@ version: '3'
 services:
     metabeemRelayMedia:                       # Service Name
         container_name: metabeem-relay-media
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
         hostname: metabeem-relay-media
         build:
             context: .
