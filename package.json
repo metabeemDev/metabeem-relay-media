@@ -27,7 +27,7 @@
 		"debug": "^4.3.4",
 		"denetwork-queue": "^1.0.9",
 		"denetwork-relay": "^1.0.16",
-		"denetwork-store": "^1.0.29",
+		"denetwork-store": "^1.0.31",
 		"denetwork-utils": "^1.0.53",
 		"deyml": "^1.0.2",
 		"ethers": "^6.7.1",

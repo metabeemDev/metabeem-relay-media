@@ -20,3 +20,7 @@ REDIS_PASSWORD:
 REDIS_DB: 0
 
 
+# settings
+# throat checking interval in milliseconds
+THROAT_CHECKING_INTERVAL: 0
+

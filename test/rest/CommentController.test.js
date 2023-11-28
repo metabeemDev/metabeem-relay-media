@@ -27,7 +27,7 @@ describe( 'CommentController', () =>
 	{
 		if ( null === server )
 		{
-			server = await startHttpServer();
+			server = await startHttpServer( {} );
 		}
 
 		//	assert ...

@@ -48,7 +48,7 @@ describe( 'PortalController', () =>
 	{
 		if ( null === server )
 		{
-			server = await startHttpServer();
+			server = await startHttpServer( {} );
 		}
 
 		//

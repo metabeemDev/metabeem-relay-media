@@ -27,7 +27,7 @@ describe( 'FavoriteController', () =>
 	{
 		if ( null === server )
 		{
-			server = await startHttpServer();
+			server = await startHttpServer( {} );
 		}
 
 		//	assert ...

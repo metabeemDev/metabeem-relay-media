@@ -69,10 +69,11 @@ describe( "TransferStoreContactService", () =>
 
 			//	...
 			const rpcMessage = RpcMessage.buildStore({
-				version	: `1.0.0`,
-				service	: `contact`,
-				method : `add`,
-				body : MessageBody.build({
+				version : `1.0.0`,
+				httpMethod : `post`,
+				serviceName : `contact`,
+				serviceMethod : `add`,
+				body : MessageBody.build( {
 					wallet : walletObj.address,
 					data : contact,
 					sig : contact.sig

@@ -69,11 +69,11 @@ export class StoreService
 				}
 				if ( ! TypeUtil.isNotEmptyString( rpcMessage.serviceName ) )
 				{
-					return reject( `invalid rpcMessage.service` );
+					return reject( `invalid rpcMessage.serviceName` );
 				}
 				if ( ! ServiceUtil.getWeb3StoreMethodNames().includes( rpcMessage.serviceMethod ) )
 				{
-					return reject( `invalid rpcMessage.method` );
+					return reject( `invalid rpcMessage.serviceMethod` );
 				}
 				if ( ! ( rpcMessage.body instanceof MessageBody ) )
 				{
