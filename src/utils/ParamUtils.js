@@ -1,5 +1,6 @@
 import minimist from "minimist";
 import _ from "lodash";
+import { ProcessUtil } from "denetwork-utils";
 
 const argv = minimist( process.argv.slice( 2 ) );
 
@@ -8,25 +9,10 @@ export class ParamUtils
 {
 	static getHttpPort()
 	{
-		let port;
-		if ( undefined !== argv &&
-		     undefined !== argv.http_port )
+		let port = ProcessUtil.getParamIntValue( `http_port` );
+		if ( ProcessUtil.isValidPortNumber( port ) )
 		{
-			port = parseInt( argv.http_port );
-			if ( this.isValidPortNumber( port ) )
-			{
-				return port;
-			}
-		}
-		if ( undefined !== process &&
-		     undefined !== process.env &&
-		     undefined !== process.env.HTTP_PORT )
-		{
-			port = parseInt( process.env.HTTP_PORT );
-			if ( this.isValidPortNumber( port ) )
-			{
-				return port;
-			}
+			return port;
 		}
 
 		return this.getDefaultHttpPort();
@@ -37,9 +23,18 @@ export class ParamUtils
 		return 8848;
 	}
 
-	static isValidPortNumber( port )
+	/**
+	 * 	@returns {any}
+	 */
+	static getRedisOptions()
 	{
-		return _.isInteger( port ) && port > 80 && port <= 65535;
+		return {
+			port : ProcessUtil.getParamIntValue( 'REDIS_PORT', 6379 ),
+			host : ProcessUtil.getParamStringValue( 'REDIS_HOST', 'host.docker.internal' ),
+			username : ProcessUtil.getParamStringValue( 'REDIS_USERNAME', '' ),
+			password : ProcessUtil.getParamStringValue( 'REDIS_PASSWORD', '' ),
+			db : ProcessUtil.getParamIntValue( 'REDIS_DB', 0 ),
+		};
 	}
 
 

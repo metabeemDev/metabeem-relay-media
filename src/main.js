@@ -1,20 +1,13 @@
-import minimist from "minimist";
-const argv = minimist( process.argv.slice( 2 ) );
 import { startHttpServer } from "./http/http.js";
 import { startP2pRelay } from "./relay/relay.js";
 
-import 'dotenv/config.js'
+import 'deyml/config';
 
 
-async function runHttpServer()
+async function asyncMain()
 {
-	await startHttpServer();
+	const p2pRelay = await startP2pRelay();
+	await startHttpServer( p2pRelay );
 }
 
-async function runRelay()
-{
-	await startP2pRelay();
-}
-
-runHttpServer().then();
-runRelay().then();
+asyncMain().then( res =>{} ).catch( err => { console.error( err ) } );

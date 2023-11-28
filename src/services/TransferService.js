@@ -30,8 +30,6 @@ export class TransferService
 					case 'store':
 						const result = await this._storeService.execute( rpcMessage );
 						return resolve( result );
-					case 'queue':
-						break;
 				}
 
 				//	...

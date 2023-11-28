@@ -1,5 +1,5 @@
 import { NetworkUtil } from "../../utils/NetworkUtil.js";
-import { BusinessControllerPromises } from "./BusinessControllerPromises.js";
+import { BusinessControllerPromise } from "./BusinessControllerPromise.js";
 import { TestUtil } from "denetwork-utils";
 
 /**
@@ -7,16 +7,16 @@ import { TestUtil } from "denetwork-utils";
  */
 export class BusinessControllers
 {
-	static async all( serviceName, methodName, req, res )
+	static async all( param, req, res )
 	{
 		try
 		{
 			if ( ! TestUtil.isTestEnv() )
 			{
-				console.log( `BusinessControllers : [${ serviceName }].[${ methodName }]` );
+				console.log( `BusinessControllers : [${ param.serviceName }].[${ param.serviceMethod }]` );
 			}
 
-			const result = await BusinessControllerPromises.process( serviceName, methodName, req, res );
+			const result = await BusinessControllerPromise.process( param, req, res );
 			res.send( NetworkUtil.getResponseObject( result ) );
 		}
 		catch ( err )

@@ -1,6 +1,7 @@
 import cors from 'cors';
 import { BusinessControllers } from "./controllers/BusinessControllers.js";
 import { IndexController } from "./controllers/IndexController.js";
+import { BusinessControllerPromise } from "./controllers/BusinessControllerPromise.js";
 
 const g_arrCorsWhitelist	= [
 	'http://127.0.0.1:3009',
@@ -62,13 +63,19 @@ export function appRoutes( app )
 	//
 	//	businesses
 	//
-	const serviceNames = [ 'comment', 'contact', 'favorite', 'follower', 'like', 'post', 'profile', 'portal' ];
-	const methodNames = [ 'add', 'update', 'updateFor', 'delete', 'queryOne', 'queryList' ];
+	const serviceNames = BusinessControllerPromise.getServiceNames();
+	const serviceMethods = BusinessControllerPromise.getServiceMethods();
 	for ( const service of serviceNames )
 	{
-		for ( const method of methodNames )
+		for ( const method of serviceMethods )
 		{
-			app.post( `/v1/${ service }/${ method }`, BusinessControllers.all.bind(null, service, method ) );
+			const param = {
+				httpMethod : `post`,
+				serviceName : service,
+				serviceMethod : method,
+				app : app,
+			};
+			app.post( `/v1/${ service }/${ method }`, BusinessControllers.all.bind(null, param ) );
 		}
 	}
 

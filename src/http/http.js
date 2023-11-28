@@ -7,12 +7,21 @@ import { ParamUtils } from "../utils/ParamUtils.js";
 const http = express();
 
 
-export function startHttpServer()
+/**
+ *	@param p2pRelay		{MediaP2pRelay}
+ *	@return {Promise<unknown>}
+ */
+export function startHttpServer( p2pRelay )
 {
 	return new Promise( async ( resolve, reject ) =>
 	{
 		try
 		{
+			if ( ! p2pRelay )
+			{
+				return reject( `invalid p2pRelay` );
+			}
+
 			if ( ! TestUtil.isTestEnv() )
 			{
 				console.log( `process.env :`, process.env );
@@ -34,6 +43,7 @@ export function startHttpServer()
 			// http.use( bodyParser.json() );
 
 			//	...
+			http.p2pRelay = p2pRelay;
 			appRoutes( http );
 
 			//	...

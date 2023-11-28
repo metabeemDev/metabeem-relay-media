@@ -5,6 +5,7 @@ import { EtherWallet, Web3Digester, Web3Signer } from "web3id";
 import { ethers } from "ethers";
 import { ERefDataTypes, SchemaUtil } from "denetwork-store";
 import { TestUtil } from "denetwork-utils";
+import _ from "lodash";
 
 let server = null;
 
@@ -27,7 +28,7 @@ describe( 'PostController', () =>
 	{
 		if ( null === server )
 		{
-			server = await startHttpServer();
+			server = await startHttpServer( {} );
 		}
 
 		//	assert ...
@@ -642,4 +643,218 @@ describe( 'PostController', () =>
 
 		}, 60 * 10e3 );
 	} );
+
+	describe( "Test statisticView", () =>
+	{
+		it( "should increase the value of statisticView after calling queryOne", async () =>
+		{
+			//
+			//	create a new post with ether signature
+			//
+			let newRecord = {
+				timestamp : new Date().getTime(),
+				hash : '',
+				version : '1.0.0',
+				deleted : SchemaUtil.createHexStringObjectIdFromTime( 0 ),
+				wallet : walletObj.address,
+				sig : ``,
+				authorName : 'XING',
+				authorAvatar : 'https://avatars.githubusercontent.com/u/142800322?v=4',
+				body : 'Hello 1',
+				pictures : [],
+				videos : [],
+				bitcoinPrice : '25888',
+				statisticView : 0,
+				statisticRepost : 0,
+				statisticQuote : 0,
+				statisticLike : 0,
+				statisticFavorite : 0,
+				statisticReply : 0,
+				remark : 'no ...',
+				createdAt: new Date(),
+				updatedAt: new Date()
+			};
+			newRecord.sig = await Web3Signer.signObject( walletObj.privateKey, newRecord, exceptedKeys );
+			newRecord.hash = await Web3Digester.hashObject( newRecord );
+			expect( newRecord.sig ).toBeDefined();
+			expect( typeof newRecord.sig ).toBe( 'string' );
+			expect( newRecord.sig.length ).toBeGreaterThanOrEqual( 0 );
+
+			const response = await request( app )
+				.post( '/v1/post/add' )
+				.send( {
+					wallet : walletObj.address, data : newRecord, sig : newRecord.sig
+				} );
+			expect( response ).toBeDefined();
+			expect( response ).toHaveProperty( 'statusCode' );
+			expect( response ).toHaveProperty( '_body' );
+			if ( 200 !== response.statusCode )
+			{
+				console.log( response );
+			}
+			expect( response.statusCode ).toBe( 200 );
+			expect( response._body ).toBeDefined();
+			expect( response._body ).toHaveProperty( 'version' );
+			expect( response._body ).toHaveProperty( 'ts' );
+			expect( response._body ).toHaveProperty( 'tu' );
+			expect( response._body ).toHaveProperty( 'error' );
+			expect( response._body ).toHaveProperty( 'data' );
+			expect( response._body.data ).toBeDefined();
+			expect( response._body.data ).toHaveProperty( 'hash' );
+			expect( response._body.data ).toHaveProperty( 'sig' );
+			expect( response._body.data.hash ).toBe( newRecord.hash );
+			expect( response._body.data.sig ).toBe( newRecord.sig );
+
+			//
+			//	will increase the value of statisticView after calling queryOne
+			//
+			const queryOneResponse = await request( app )
+				.post( '/v1/post/queryOne' )
+				.send( {
+					wallet : walletObj.address,
+					data : { by : 'hash', hash : newRecord.hash },
+					sig : ''
+				} );
+			expect( queryOneResponse ).toBeDefined();
+			expect( queryOneResponse ).toHaveProperty( 'statusCode' );
+			expect( queryOneResponse ).toHaveProperty( '_body' );
+			expect( queryOneResponse.statusCode ).toBe( 200 );
+			expect( queryOneResponse._body ).toBeDefined();
+			expect( queryOneResponse._body.data ).toBeDefined();
+			expect( queryOneResponse._body.data ).toBeDefined();
+			expect( queryOneResponse._body.data ).toHaveProperty( 'hash' );
+			expect( queryOneResponse._body.data ).toHaveProperty( 'sig' );
+			expect( queryOneResponse._body.data ).toHaveProperty( 'statisticView' );
+			expect( queryOneResponse._body.data.hash ).toBe( newRecord.hash );
+			expect( queryOneResponse._body.data.sig ).toBe( newRecord.sig );
+			expect( _.isNumber( queryOneResponse._body.data.statisticView ) ).toBeTruthy();
+			expect( queryOneResponse._body.data.statisticView ).toBe( 1 );
+
+		});
+		it( 'should increase the value of statisticShare', async () =>
+		{
+			//
+			//	create a new post with ether signature
+			//
+			let newRecord = {
+				timestamp : new Date().getTime(),
+				hash : '',
+				version : '1.0.0',
+				deleted : SchemaUtil.createHexStringObjectIdFromTime( 0 ),
+				wallet : walletObj.address,
+				sig : ``,
+				authorName : 'XING',
+				authorAvatar : 'https://avatars.githubusercontent.com/u/142800322?v=4',
+				body : 'Hello 1',
+				pictures : [],
+				videos : [],
+				bitcoinPrice : '25888',
+				statisticView : 0,
+				statisticRepost : 0,
+				statisticQuote : 0,
+				statisticLike : 0,
+				statisticFavorite : 0,
+				statisticReply : 0,
+				remark : 'no ...',
+				createdAt: new Date(),
+				updatedAt: new Date()
+			};
+			newRecord.sig = await Web3Signer.signObject( walletObj.privateKey, newRecord, exceptedKeys );
+			newRecord.hash = await Web3Digester.hashObject( newRecord );
+			expect( newRecord.sig ).toBeDefined();
+			expect( typeof newRecord.sig ).toBe( 'string' );
+			expect( newRecord.sig.length ).toBeGreaterThanOrEqual( 0 );
+
+			const response = await request( app )
+				.post( '/v1/post/add' )
+				.send( {
+					wallet : walletObj.address, data : newRecord, sig : newRecord.sig
+				} );
+			expect( response ).toBeDefined();
+			expect( response ).toHaveProperty( 'statusCode' );
+			expect( response ).toHaveProperty( '_body' );
+			if ( 200 !== response.statusCode )
+			{
+				console.log( response );
+			}
+			expect( response.statusCode ).toBe( 200 );
+			expect( response._body ).toBeDefined();
+			expect( response._body ).toHaveProperty( 'version' );
+			expect( response._body ).toHaveProperty( 'ts' );
+			expect( response._body ).toHaveProperty( 'tu' );
+			expect( response._body ).toHaveProperty( 'error' );
+			expect( response._body ).toHaveProperty( 'data' );
+			expect( response._body.data ).toBeDefined();
+			expect( response._body.data ).toHaveProperty( 'hash' );
+			expect( response._body.data ).toHaveProperty( 'sig' );
+			expect( response._body.data.hash ).toBe( newRecord.hash );
+			expect( response._body.data.sig ).toBe( newRecord.sig );
+
+
+			//
+			//	increase the value of statisticShare
+			//
+			const updateForResponse1 = await request( app )
+				.post( '/v1/post/updateFor' )
+				.send( {
+					wallet : walletObj.address,
+					data : { hash : newRecord.hash, key : `statisticShare`, value : 1 },
+					sig : undefined
+				} );
+			expect( updateForResponse1 ).toBeDefined();
+			expect( updateForResponse1 ).toHaveProperty( 'statusCode' );
+			expect( updateForResponse1 ).toHaveProperty( '_body' );
+			if ( 200 !== updateForResponse1.statusCode )
+			{
+				console.log( updateForResponse1 );
+			}
+			expect( updateForResponse1.statusCode ).toBe( 200 );
+			expect( updateForResponse1._body ).toBeDefined();
+			expect( updateForResponse1._body ).toHaveProperty( 'version' );
+			expect( updateForResponse1._body ).toHaveProperty( 'ts' );
+			expect( updateForResponse1._body ).toHaveProperty( 'tu' );
+			expect( updateForResponse1._body ).toHaveProperty( 'error' );
+			expect( updateForResponse1._body ).toHaveProperty( 'data' );
+			expect( updateForResponse1._body.data ).toBeDefined();
+			expect( updateForResponse1._body.data ).toHaveProperty( 'hash' );
+			expect( updateForResponse1._body.data ).toHaveProperty( 'sig' );
+			expect( updateForResponse1._body.data ).toHaveProperty( 'statisticShare' );
+			expect( updateForResponse1._body.data.hash ).toBe( newRecord.hash );
+			expect( updateForResponse1._body.data.sig ).toBe( newRecord.sig );
+			expect( updateForResponse1._body.data.statisticShare ).toBe( 1 );
+
+
+			//
+			//	increase the value of statisticShare
+			//
+			const updateForResponse2 = await request( app )
+				.post( '/v1/post/updateFor' )
+				.send( {
+					wallet : walletObj.address,
+					data : { hash : newRecord.hash, key : `statisticShare`, value : 1 },
+					sig : undefined
+				} );
+			expect( updateForResponse2 ).toBeDefined();
+			expect( updateForResponse2 ).toHaveProperty( 'statusCode' );
+			expect( updateForResponse2 ).toHaveProperty( '_body' );
+			if ( 200 !== updateForResponse2.statusCode )
+			{
+				console.log( updateForResponse2 );
+			}
+			expect( updateForResponse2.statusCode ).toBe( 200 );
+			expect( updateForResponse2._body ).toBeDefined();
+			expect( updateForResponse2._body ).toHaveProperty( 'version' );
+			expect( updateForResponse2._body ).toHaveProperty( 'ts' );
+			expect( updateForResponse2._body ).toHaveProperty( 'tu' );
+			expect( updateForResponse2._body ).toHaveProperty( 'error' );
+			expect( updateForResponse2._body ).toHaveProperty( 'data' );
+			expect( updateForResponse2._body.data ).toBeDefined();
+			expect( updateForResponse2._body.data ).toHaveProperty( 'hash' );
+			expect( updateForResponse2._body.data ).toHaveProperty( 'sig' );
+			expect( updateForResponse2._body.data ).toHaveProperty( 'statisticShare' );
+			expect( updateForResponse2._body.data.hash ).toBe( newRecord.hash );
+			expect( updateForResponse2._body.data.sig ).toBe( newRecord.sig );
+			expect( updateForResponse2._body.data.statisticShare ).toBe( 2 );
+		});
+	});
 } );

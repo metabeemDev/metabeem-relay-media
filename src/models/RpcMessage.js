@@ -1,8 +1,8 @@
 import { MessageBody } from "./MessageBody.js";
+import _ from "lodash";
 
 export const RpcMessageTypes = Object.freeze({
 	store: 'store',
-	queue: 'queue',
 });
 export const RpcHttpMethods = Object.freeze({
 	get: 'get',
@@ -22,41 +22,56 @@ export const RpcHttpMethods = Object.freeze({
  */
 export class RpcMessage
 {
-	constructor({
-			type : type,
-			version : version,
-			service : service,
-			method : method,
-			body : body
-	} = undefined )
-	{
-		this.type	= undefined;
-		this.version	= undefined;
-		this.service	= undefined;
-		this.method	= undefined;
-		this.body	= undefined;
+	/**
+	 *	@type {string}
+	 */
+	type	= undefined;
 
-		this.setType( type );
-		this.setVersion( version );
-		this.setService( service );
-		this.setMethod( method );
-		this.setBody( body );
+	/**
+	 *	@type {string}
+	 */
+	version	= undefined;
+
+	/**
+	 *	@type {string}
+	 */
+	httpMethod= undefined;
+
+	/**
+	 *	@type {string}
+	 */
+	serviceName= undefined;
+
+	/**
+	 *	@type {string}
+	 */
+	serviceMethod= undefined;
+
+	/**
+	 *	@type {MessageBody}
+	 */
+	body= undefined;
+
+
+	constructor()
+	{
 	}
 
 	static buildStore({
 			   version : version,
-			   service : service,
-			   method : method,
+			   httpMethod : httpMethod,
+			   serviceName : serviceName,
+			   serviceMethod : serviceMethod,
 			   body : body
 		   })
 	{
-		return new RpcMessage({
-			type : `store`,
-			version	: version,
-			service	: service,
-			method : method,
-			body : body
-		});
+		const rpcMessage = new RpcMessage();
+		rpcMessage.setType( `store` );
+		rpcMessage.setVersion( version );
+		rpcMessage.setServiceName( serviceName );
+		rpcMessage.setMethod( serviceMethod );
+		rpcMessage.setBody( body );
+		return rpcMessage;
 	}
 
 	getType()
@@ -84,23 +99,43 @@ export class RpcMessage
 		return this;
 	}
 
-	getService()
+	getHttpMethod()
 	{
-		return this.service;
+		return this.httpMethod;
 	}
-	setService( service )
+	setHttpMethod( httpMethod )
 	{
-		this.service = service;
+		if ( ! this.isValidHttpMethod( httpMethod ) )
+		{
+			throw new Error( `invalid httpMethod` );
+		}
+
+		this.httpMethod = httpMethod;
+		return this;
+	}
+	isValidHttpMethod( httpMethod )
+	{
+		return _.isString( httpMethod ) && ! _.isEmpty( httpMethod ) && _.has( RpcHttpMethods, httpMethod );
+	}
+
+
+	getServiceName()
+	{
+		return this.serviceName;
+	}
+	setServiceName( serviceName )
+	{
+		this.serviceName = serviceName;
 		return this;
 	}
 
 	getMethod()
 	{
-		return this.method;
+		return this.serviceMethod;
 	}
 	setMethod( method )
 	{
-		this.method = method;
+		this.serviceMethod = method;
 		return this;
 	}
 

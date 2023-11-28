@@ -14,7 +14,8 @@ import {
 import { ServiceUtil } from "denetwork-store";
 import { TestUtil, TypeUtil } from "denetwork-utils";
 import { MessageBody } from "../../models/MessageBody.js";
-import 'dotenv/config.js'
+
+import 'deyml/config';
 
 
 /**
@@ -66,11 +67,11 @@ export class StoreService
 				{
 					return reject( `invalid rpcMessage.type, not store` );
 				}
-				if ( ! TypeUtil.isNotEmptyString( rpcMessage.service ) )
+				if ( ! TypeUtil.isNotEmptyString( rpcMessage.serviceName ) )
 				{
 					return reject( `invalid rpcMessage.service` );
 				}
-				if ( ! ServiceUtil.getWeb3StoreMethodNames().includes( rpcMessage.method ) )
+				if ( ! ServiceUtil.getWeb3StoreMethodNames().includes( rpcMessage.serviceMethod ) )
 				{
 					return reject( `invalid rpcMessage.method` );
 				}
@@ -85,7 +86,7 @@ export class StoreService
 				}
 
 				let serviceObj = null;
-				switch ( rpcMessage.service )
+				switch ( rpcMessage.serviceName )
 				{
 					case 'comment' :
 						serviceObj = new CommentService();
@@ -114,7 +115,7 @@ export class StoreService
 				}
 				if ( serviceObj )
 				{
-					const serviceResult = await serviceObj[ rpcMessage.method ]
+					const serviceResult = await serviceObj[ rpcMessage.serviceMethod ]
 					(
 						rpcMessage.body.wallet,
 						rpcMessage.body.data,
