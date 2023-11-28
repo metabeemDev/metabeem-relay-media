@@ -1,5 +1,8 @@
 FROM node:18.17.1
 
+#   create configuration directory
+RUN mkdir /etc/denetwork/
+
 #   create a working directory inside the container
 WORKDIR /usr/src/app
 
