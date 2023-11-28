@@ -17,6 +17,7 @@ COPY . .
 
 #   expose the ports used by the application
 EXPOSE 6612
+EXPOSE 9011
 
 #   run application inside container
 CMD [ "node", "src/main.js" ]

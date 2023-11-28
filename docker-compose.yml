@@ -11,6 +11,7 @@ services:
             # 指定端口映射，类似 docker run 的 -p 选项，注意使用字符串形式
             # [local port]:[container port]
             - "6612:6612"
+            - "9011:9011"
         volumes:
             - ./deploy/etc/denetwork/.swarmKey:/etc/denetwork/.swarmKey:ro
             - ./deploy/etc/hosts:/etc/hosts:ro
