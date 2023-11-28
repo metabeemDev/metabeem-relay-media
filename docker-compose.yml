@@ -11,10 +11,10 @@ services:
             # [local port]:[container port]
             - "6612:6612"
         volumes:
-            - ./deploy/etc/denetwork/.swarmKey:/etc/denetwork/.swarmKey
+            - ./deploy/etc/denetwork/.swarmKey:/etc/denetwork/.swarmKey:ro
+            - ./deploy/etc/hosts:/etc/hosts:ro
             #- ./deploy/etc/localtime:/etc/localtime:ro
             #- ./deploy/etc/timezone:/etc/timezone:ro
-            #- ./deploy/etc/hosts:/etc/hosts:ro
         #environment:
         #    - HTTP_PORT=6612
         #    - STORE_DATABASE_URL=mongodb://host.docker.internal:27017/metabeem
