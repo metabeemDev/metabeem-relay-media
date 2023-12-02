@@ -18,7 +18,7 @@ export function startP2pRelay()
 		try
 		{
 			await p2pRelay.start();
-			console.log( `))) Metabeem Relay listening on port ${ p2pRelay.relayOptions.port }` );
+			console.log( `))) Metabeem Media Relay listening on port ${ p2pRelay.relayOptions.port }` );
 			resolve( p2pRelay );
 		}
 		catch ( err )

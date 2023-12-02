@@ -12,9 +12,12 @@ services:
             # [local port]:[container port]
             - "6612:6612"
             - "9011:9011"
+        extra_hosts:
+            - "host.docker.internal:192.168.3.186"
+            #- "host.docker.internal:192.168.0.96"
         volumes:
             - ./deploy/etc/denetwork/.swarmKey:/etc/denetwork/.swarmKey:ro
-            - ./deploy/etc/hosts:/etc/hosts:ro
+            #- ./deploy/etc/hosts:/etc/hosts:ro
             #- ./deploy/etc/localtime:/etc/localtime:ro
             #- ./deploy/etc/timezone:/etc/timezone:ro
 
