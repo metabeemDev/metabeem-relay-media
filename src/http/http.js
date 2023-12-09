@@ -1,7 +1,8 @@
 import express from "express";
-import { appRoutes } from './httpRoutes.js';
+import { httpRoutes } from './httpRoutes.js';
 import { TestUtil } from "denetwork-utils";
 import { ParamUtils } from "../utils/ParamUtils.js";
+import { httpCopy } from "./httpCopy.js";
 
 //	...
 const http = express();
@@ -44,7 +45,8 @@ export function startHttpServer( p2pRelay )
 
 			//	...
 			http.p2pRelay = p2pRelay;
-			appRoutes( http );
+			httpRoutes( http );
+			httpCopy( http );
 
 			//	...
 			const listenServer = http.listen( port, () =>

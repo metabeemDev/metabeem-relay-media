@@ -39,6 +39,10 @@ export class BusinessControllerPromise
 				{
 					return reject( `BusinessControllerPromise:process :: invalid param` );
 				}
+				if ( ! param.http )
+				{
+					return reject( `BusinessControllerPromise:process :: invalid param.http` );
+				}
 				if ( ! TypeUtil.isNotEmptyString( param.serviceName ) )
 				{
 					return reject( `BusinessControllerPromise:process :: invalid param.serviceName` );
@@ -82,7 +86,7 @@ export class BusinessControllerPromise
 				{
 					if ( this.isUpdateMethod( param.serviceMethod ) )
 					{
-						await param.app.p2pRelay.publish( rpcMessage );
+						await param.http.p2pRelay.publish( rpcMessage );
 					}
 				}
 

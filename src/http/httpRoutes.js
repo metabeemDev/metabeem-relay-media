@@ -32,23 +32,23 @@ const g_oCorsOptions=
 /**
  *	routes
  *
- *	@param	app 		{Express}
- *	@param	app.use		{function}
- *	@param	app.all		{function}
+ *	@param	http 		{Express}
+ *	@param	http.use	{function}
+ *	@param	http.all	{function}
  */
-export function appRoutes( app )
+export function httpRoutes( http )
 {
 	//	enable CORS Pre-Flight for all routers
-	//app.options( '*', cors( g_oCorsOptions ) );	//	include before other routes
-	//app.use( cors( g_oCorsOptions ) );
-	app.use( cors() );	//	allow all
+	//http.options( '*', cors( g_oCorsOptions ) );	//	include before other routes
+	//http.use( cors( g_oCorsOptions ) );
+	http.use( cors() );	//	allow all
 
 
 	//
 	//	index
 	//
-	app.get( '/', IndexController.index );
-	app.post( '/', IndexController.index );
+	http.get( '/', IndexController.index );
+	http.post( '/', IndexController.index );
 
 	// //
 	// //	portal
@@ -70,12 +70,12 @@ export function appRoutes( app )
 		for ( const method of serviceMethods )
 		{
 			const param = {
+				http : http,
 				httpMethod : `post`,
 				serviceName : service,
 				serviceMethod : method,
-				app : app,
 			};
-			app.post( `/v1/${ service }/${ method }`, BusinessControllers.all.bind(null, param ) );
+			http.post( `/v1/${ service }/${ method }`, BusinessControllers.all.bind(null, param ) );
 		}
 	}
 

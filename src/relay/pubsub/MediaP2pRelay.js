@@ -23,19 +23,21 @@ export class MediaP2pRelay extends BaseP2pRelay
 				//
 				//	start p2p relay
 				//
-				await super.start( ( data ) =>
+				await super.start( ( p2pPackage ) =>
 				{
-					if ( _.isObject( data.body ) &&
-					     _.has( data.body, 'heartbeat' ) )
+					if ( _.isObject( p2pPackage.body ) &&
+					     _.has( p2pPackage.body, 'heartbeat' ) )
 					{
 						//	ignore heartbeat
+						console.log( `|||||| p2p : received a business broadcasting heartbeat packet ~~~~~~~~` );
 						return false;
 					}
 
 					//
 					//	save broadcast package to pool
 					//
-					this.httpRequestPool.push( data );
+					console.log( `|||||| p2p : received a business broadcasting package, try to push it into messageRequestPool` );
+					this.p2pMediaPackagePool.push( p2pPackage );
 				});
 
 				//	...

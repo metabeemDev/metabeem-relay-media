@@ -3,7 +3,7 @@ import _ from "lodash";
 import { RelayService } from "denetwork-relay";
 import { CreateRelayOptionsBuilder } from "denetwork-relay";
 import { ProcessUtil } from "denetwork-utils";
-import { HttpRequestPool } from "../pool/HttpRequestPool.js";
+import { P2pMediaPackagePool } from "../pool/P2pMediaPackagePool.js";
 
 import "deyml/config";
 
@@ -30,9 +30,9 @@ export class BaseP2pRelay
 	relayOptions = {};
 
 	/**
-	 *	@type {HttpRequestPool}
+	 *	@type {P2pMediaPackagePool}
 	 */
-	httpRequestPool = new HttpRequestPool();
+	p2pMediaPackagePool = new P2pMediaPackagePool();
 
 
 	constructor( topic )
@@ -52,7 +52,7 @@ export class BaseP2pRelay
 				//
 				//	create http request pool
 				//
-				this.httpRequestPool.init();
+				this.p2pMediaPackagePool.init();
 
 				//
 				//	create p2p relay
@@ -118,22 +118,22 @@ export class BaseP2pRelay
 	}
 
 	/**
-	 *	@param data	{any}
+	 *	@param rpcMessage	{RpcMessage}
 	 *	@return {Promise< any | undefined >}
 	 */
-	async publish( data )
+	async publish( rpcMessage )
 	{
 		return new Promise( async ( resolve, reject ) =>
 		{
 			try
 			{
-				if ( ! data )
+				if ( ! rpcMessage )
 				{
 					return reject( `${ this.constructor.name }.publish :: invalid data` );
 				}
 
 				//	return publishResult or undefined
-				const publishResult = await this.relayService.publish( this.subTopic, data );
+				const publishResult = await this.relayService.publish( this.subTopic, rpcMessage );
 				resolve( publishResult );
 			}
 			catch ( err )
@@ -143,15 +143,53 @@ export class BaseP2pRelay
 		});
 	}
 
+
 	printNetworkInfo()
 	{
-		const allPeers = this.relayService.getPeers();
-		console.log( `)))))))))) allPeers :`, allPeers );
+		setInterval( () =>
+		{
+			const allPeers = this.relayService.getPeers();
+			const allSubscribers = this.relayService.getSubscribers( this.subTopic );
+			const allTopics = this.relayService.getTopics();
 
-		const allSubscribers = this.relayService.getSubscribers( this.subTopic );
-		console.log( `)))))))))) allSubscribers :`, allSubscribers );
+			if ( this.compareNetworkChanging( allPeers, allSubscribers, allTopics ) )
+			{
+				this.lastAllPeers = _.cloneDeep( allPeers );
+				this.lastAllSubscribers = _.cloneDeep( allSubscribers );
+				this.lastAllTopics = _.cloneDeep( allTopics );
 
-		const allTopics = this.relayService.getTopics();
-		console.log( `)))))))))) allTopics :`, allTopics );
+				console.log( `))) ` );
+				console.log( `))) allPeers :`, allPeers );
+				console.log( `))) allSubscribers :`, allSubscribers );
+				console.log( `))) allTopics :`, allTopics );
+			}
+
+		}, 1000 );
+	}
+
+	compareNetworkChanging( allPeers, allSubscribers, allTopics )
+	{
+		if ( ! this.lastAllPeers || ! this.lastAllSubscribers || ! this.lastAllTopics )
+		{
+			//	changed
+			return true;
+		}
+		if ( ! _.isEqualWith( this.lastAllPeers, allPeers, ( a, b ) =>
+		{
+			return a.toString().trim().toLowerCase() === b.toString().trim().toLowerCase();
+		}) )
+		{
+			return true;
+		}
+		if ( ! _.isEqualWith( this.lastAllSubscribers, allSubscribers, ( a, b ) =>
+		{
+			return a.toString().trim().toLowerCase() === b.toString().trim().toLowerCase();
+		}) )
+			if ( ! _.isEqual( this.lastAllTopics, allTopics ) )
+			{
+				return true;
+			}
+
+		return false;
 	}
 }
