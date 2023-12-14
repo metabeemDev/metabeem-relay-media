@@ -134,6 +134,7 @@ export class BaseP2pRelay
 
 				//	return publishResult or undefined
 				const publishResult = await this.relayService.publish( this.subTopic, rpcMessage );
+				console.log( `|||||| ${ this.constructor.name }.publish :: publishResult :`, publishResult )
 				resolve( publishResult );
 			}
 			catch ( err )
