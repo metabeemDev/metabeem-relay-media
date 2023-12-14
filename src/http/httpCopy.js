@@ -1,5 +1,6 @@
 import _ from "lodash";
 import denetwork_utils from "denetwork-utils";
+import { ParamUtils } from "../utils/ParamUtils.js";
 const { HttpUtil, HttpUtilOptions } = denetwork_utils;
 
 /**
@@ -39,12 +40,14 @@ export function httpCopy( http )
 			 * 	@type {RpcMessage}
 			 */
 			const rpcMessage = message.body;
+			const httpPort = ParamUtils.getHttpPort();
+			const url = `http://127.0.0.1:${ httpPort }${ rpcMessage.httpPath }`;
 
 			/**
 			 *	@type { HttpUtilOptions }
 			 */
 			const httpOptions = {
-				url : `http://127.0.0.1${ rpcMessage.httpPath }`,
+				url : url,
 				method : rpcMessage.httpMethod,
 				data : rpcMessage.body,
 			};
