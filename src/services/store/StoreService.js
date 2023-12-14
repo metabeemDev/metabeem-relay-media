@@ -135,6 +135,7 @@ export class StoreService
 			}
 			catch ( err )
 			{
+				console.log( `###### ${ this.constructor.name }.execute :`, err );
 				reject( err );
 			}
 		});
