@@ -1,3 +1,7 @@
+import { HttpUtil } from "denetwork-utils";
+import denetwork_utils from "denetwork-utils";
+const { HttpUtilOptions } = denetwork_utils;
+
 /**
  *	http copy
  *
@@ -23,7 +27,7 @@ export function httpCopy( http )
 	 * 	subscribe to broadcasts from the p2p network and
 	 * 	resend to the http request locally
 	 */
-	http.p2pRelay.p2pMediaPackagePool.subscribe( ( /** @type {string} **/ channel, /** @type {string} **/ message, /** @type {any} **/ options ) =>
+	http.p2pRelay.p2pMediaPackagePool.subscribe( async ( /** @type {string} **/ channel, /** @type {string} **/ message, /** @type {any} **/ options ) =>
 	{
 		console.log( `%%%%%% received a message from messageRequestPool :`, channel, message, options );
 		if ( _.isObject( message ) &&
@@ -31,9 +35,22 @@ export function httpCopy( http )
 		     _.isObject( message.body.data ) )
 		{
 			console.log( `%%%%%% will resend the http request :`, message.body.data );
-			//chatServer.sendMessageToRoom( message.body.data );
-			//	TODO
-			//	resend the http package
+
+			/**
+			 * 	@type {RpcMessage}
+			 */
+			const rpcMessage = message.body.data;
+
+			/**
+			 *	@type { HttpUtilOptions }
+			 */
+			const httpOptions = {
+				url : `http://127.0.0.1${ rpcMessage.httpPath }`,
+				method : rpcMessage.httpMethod,
+				data : rpcMessage.body,
+			}
+			const response = await HttpUtil.request( httpOptions );
+			console.log( `%%%%%% http.p2pRelay.p2pMediaPackagePool.subscribe response :`, response );
 		}
 		else
 		{

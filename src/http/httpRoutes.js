@@ -71,11 +71,12 @@ export function httpRoutes( http )
 		{
 			const param = {
 				http : http,
+				httpPath : `/v1/${ service }/${ method }`,
 				httpMethod : `post`,
 				serviceName : service,
 				serviceMethod : method,
 			};
-			http.post( `/v1/${ service }/${ method }`, BusinessControllers.all.bind(null, param ) );
+			http.post( param.httpPath, BusinessControllers.all.bind(null, param ) );
 		}
 	}
 

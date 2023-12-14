@@ -1,8 +1,10 @@
 import { TestUtil, TypeUtil } from "denetwork-utils";
-import { RpcMessage } from "../../models/RpcMessage.js";
+import { RpcMessage, RpcMessageTypes } from "../../models/RpcMessage.js";
 import { MessageBody } from "../../models/MessageBody.js";
 import { TransferService } from "../../services/TransferService.js";
 import _ from "lodash";
+import { Network } from "ethers";
+import { NetworkUtil } from "../../utils/NetworkUtil.js";
 
 
 const transferService = new TransferService();
@@ -64,18 +66,23 @@ export class BusinessControllerPromise
 				// 	return reject( `BusinessControllerPromise:process :: invalid wallet` );
 				// }
 
+				const host = NetworkUtil.getRequestHost( req );
+				console.log( `))) Http request host :`, host );
+
 				//	...
-				const rpcMessage = RpcMessage.buildStore({
-					version : `1.0.0`,
-					httpMethod : param.httpMethod,
-					serviceName : param.serviceName,
-					serviceMethod : param.serviceMethod,
-					body : MessageBody.build( {
+				const rpcMessage = RpcMessage.builder()
+					.setType( RpcMessageTypes.store )
+					.setVersion( `1.0.0` )
+					.setHttpPath( param.httpPath )
+					.setHttpMethod( param.httpMethod )
+					.setServiceName( param.serviceName )
+					.setServiceMethod( param.serviceMethod )
+					.setBody( MessageBody.build( {
 						wallet : req.body.wallet,
 						data : req.body.data,
 						sig : req.body.sig
-					})
-				});
+					} ) )
+				;
 				const result = await transferService.execute( rpcMessage );
 
 				//
@@ -84,7 +91,8 @@ export class BusinessControllerPromise
 				//
 				if ( ! TestUtil.isTestEnv() )
 				{
-					if ( this.isUpdateMethod( param.serviceMethod ) )
+					if ( ! NetworkUtil.isRequestFromLocalhost( req ) &&
+					     this.isUpdateMethod( param.serviceMethod ) )
 					{
 						await param.http.p2pRelay.publish( rpcMessage );
 					}

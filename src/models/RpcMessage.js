@@ -38,6 +38,11 @@ export class RpcMessage
 	httpMethod= undefined;
 
 	/**
+	 * 	@type {string}
+	 */
+	httpPath = undefined;
+
+	/**
 	 *	@type {string}
 	 */
 	serviceName= undefined;
@@ -57,19 +62,27 @@ export class RpcMessage
 	{
 	}
 
+	static builder()
+	{
+		return new RpcMessage();
+	}
+
 	static buildStore({
-			   version : version,
-			   httpMethod : httpMethod,
-			   serviceName : serviceName,
-			   serviceMethod : serviceMethod,
-			   body : body
+			version : version,
+			httpPath : httpPath,
+			httpMethod : httpMethod,
+			serviceName : serviceName,
+			serviceMethod : serviceMethod,
+			body : body
 		   })
 	{
 		const rpcMessage = new RpcMessage();
 		rpcMessage.setType( `store` );
 		rpcMessage.setVersion( version );
+		rpcMessage.setHttpPath( httpPath );
+		rpcMessage.setHttpMethod( httpMethod );
 		rpcMessage.setServiceName( serviceName );
-		rpcMessage.setMethod( serviceMethod );
+		rpcMessage.setServiceMethod( serviceMethod );
 		rpcMessage.setBody( body );
 		return rpcMessage;
 	}
@@ -118,6 +131,16 @@ export class RpcMessage
 		return _.isString( httpMethod ) && ! _.isEmpty( httpMethod ) && _.has( RpcHttpMethods, httpMethod );
 	}
 
+	getHttpPath()
+	{
+		return this.httpPath;
+	}
+	setHttpPath( httpPath )
+	{
+		this.httpPath = httpPath;
+		return this;
+	}
+
 
 	getServiceName()
 	{
@@ -129,11 +152,11 @@ export class RpcMessage
 		return this;
 	}
 
-	getMethod()
+	getServiceMethod()
 	{
 		return this.serviceMethod;
 	}
-	setMethod( method )
+	setServiceMethod( method )
 	{
 		this.serviceMethod = method;
 		return this;

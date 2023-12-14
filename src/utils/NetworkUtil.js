@@ -6,6 +6,33 @@ import _ from "lodash";
 export class NetworkUtil
 {
 	/**
+	 *	@param req
+	 *	@return { string|null }
+	 */
+	static getRequestHost( req )
+	{
+		if ( req && req.headers && req.headers.host )
+		{
+			if ( _.isString( req.headers.host ) && ! _.isEmpty( req.headers.host ) )
+			{
+				return req.headers.host.split( `:` )[ 0 ];
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 *	@param req
+	 *	@return { boolean }
+	 */
+	static isRequestFromLocalhost( req )
+	{
+		const host = this.getRequestHost( req );
+		return `127.0.0.1` === host || `localhost` === host;
+	}
+
+	/**
 	 *	get response object
 	 *
 	 *	@param	data		{object}
