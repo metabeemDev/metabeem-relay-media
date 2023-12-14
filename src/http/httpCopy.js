@@ -1,13 +1,6 @@
-import { HttpUtil } from "denetwork-utils";
-import denetwork_utils from "denetwork-utils";
 import _ from "lodash";
-import {
-	HttpUtilHeaderObject,
-	HttpUtilMethods,
-	HttpUtilMilliseconds,
-	HttpUtilProxy
-} from "denetwork-utils/src/utils/HttpUtil.js";
-const { HttpUtilOptions } = denetwork_utils;
+import denetwork_utils from "denetwork-utils";
+const { HttpUtil, HttpUtilOptions } = denetwork_utils;
 
 /**
  *	http copy
