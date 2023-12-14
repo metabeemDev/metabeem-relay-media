@@ -32,15 +32,14 @@ export function httpCopy( http )
 	{
 		console.log( `%%%%%% received a message from messageRequestPool :`, channel, message, options );
 		if ( _.isObject( message ) &&
-		     _.isObject( message.body ) &&
-		     _.isObject( message.body.data ) )
+		     _.isObject( message.body ) )
 		{
-			console.log( `%%%%%% will resend the http request :`, message.body.data );
+			console.log( `%%%%%% will resend the http request :`, message.body );
 
 			/**
 			 * 	@type {RpcMessage}
 			 */
-			const rpcMessage = message.body.data;
+			const rpcMessage = message.body;
 
 			/**
 			 *	@type { HttpUtilOptions }
