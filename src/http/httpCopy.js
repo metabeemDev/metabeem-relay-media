@@ -34,8 +34,6 @@ export function httpCopy( http )
 		if ( _.isObject( message ) &&
 		     _.isObject( message.body ) )
 		{
-			console.log( `%%%%%% will resend the http request :`, message.body );
-
 			/**
 			 * 	@type {RpcMessage}
 			 */
@@ -51,6 +49,7 @@ export function httpCopy( http )
 				method : rpcMessage.httpMethod,
 				data : rpcMessage.body,
 			};
+			console.log( `%%%%%% will resend the http request :`, httpOptions );
 			const response = await HttpUtil.request( httpOptions );
 			console.log( `%%%%%% resent the http request, response :`, response );
 		}
