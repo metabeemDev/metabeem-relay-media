@@ -29,7 +29,7 @@ export class MediaP2pRelay extends BaseP2pRelay
 					     _.has( p2pPackage.body, 'bizPing' ) )
 					{
 						//	ignore heartbeat
-						console.log( `|||||| p2p : received a business broadcasting bizPing packet ~~~~~~~~` );
+						//console.log( `|||||| p2p : received a business broadcasting bizPing packet ~~~~~~~~` );
 						return false;
 					}
 
