@@ -26,10 +26,10 @@ export class MediaP2pRelay extends BaseP2pRelay
 				await super.start( ( p2pPackage ) =>
 				{
 					if ( _.isObject( p2pPackage.body ) &&
-					     _.has( p2pPackage.body, 'bigPing' ) )
+					     _.has( p2pPackage.body, 'bizPing' ) )
 					{
 						//	ignore heartbeat
-						console.log( `|||||| p2p : received a business broadcasting heartbeat packet ~~~~~~~~` );
+						console.log( `|||||| p2p : received a business broadcasting bizPing packet ~~~~~~~~` );
 						return false;
 					}
 
