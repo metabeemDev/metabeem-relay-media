@@ -1,6 +1,7 @@
 # HTTP
 HTTP_PORT: 6612
 
+
 # P2p
 P2P_PORT: 9011
 P2P_PEER_ID:
@@ -12,6 +13,7 @@ P2P_BOOTSTRAPPERS:
 # store
 STORE_DATABASE_URL : mongodb://host.docker.internal:27017/metabeem
 
+
 # cache
 REDIS_PORT: 6379
 REDIS_HOST: host.docker.internal
@@ -19,4 +21,8 @@ REDIS_USERNAME:
 REDIS_PASSWORD:
 REDIS_DB: 0
 
+
+# settings
+# throat checking interval in milliseconds
+THROAT_CHECKING_INTERVAL: 0
 
