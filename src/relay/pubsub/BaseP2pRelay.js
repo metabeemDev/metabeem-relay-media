@@ -5,6 +5,9 @@ import { CreateRelayOptionsBuilder } from "denetwork-relay";
 import { ProcessUtil } from "denetwork-utils";
 import { P2pMediaPackagePool } from "../pool/P2pMediaPackagePool.js";
 
+import { enable, logger } from "@libp2p/logger";
+enable( 'denetwork:RelayService' );
+
 import "deyml/config";
 
 
