@@ -68,6 +68,8 @@ export class BaseP2pRelay
 					return reject( `invalid p2p bootstrappers` );
 				}
 
+				const p2p_announces = process.env.P2P_ANNOUNCES;
+
 				const p2p_port = ProcessUtil.getParamIntValue( `p2p_port` );
 				const peerIdFilename = ProcessUtil.getParamStringValue( `p2p_peer_id` );
 				const swarmKeyFilename = ProcessUtil.getParamStringValue( `p2p_swarm_key` );
@@ -75,7 +77,7 @@ export class BaseP2pRelay
 					.setPeerIdFilename( peerIdFilename )
 					.setSwarmKeyFilename( swarmKeyFilename )
 					.setPort( p2p_port )
-					.setAnnounceAddresses( [] )
+					.setAnnounceAddresses( Array.isArray( p2p_announces ) ? p2p_announces : [] )
 					.setBootstrapperAddresses( p2p_bootstrappers )
 					.setPubsubPeerDiscoveryTopics( [] )
 					.build();
