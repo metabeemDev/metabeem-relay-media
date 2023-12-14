@@ -89,11 +89,17 @@ export class BusinessControllerPromise
 				//	broadcast user requests except for local requests
 				//	to others Media-Relay over p2p network,
 				//
-				if ( ! TestUtil.isTestEnv() )
+				const isRequestFromLocalhost = NetworkUtil.isRequestFromLocalhost( req );
+				const isUpdateMethod = this.isUpdateMethod( param.serviceMethod );
+				const isTestEnv = TestUtil.isTestEnv();
+				console.log( `))) isRequestFromLocalhost = ${ isRequestFromLocalhost }` );
+				console.log( `))) isUpdateMethod = ${ isUpdateMethod }` );
+				console.log( `))) isTestEnv = ${ isTestEnv }` );
+				if ( ! isTestEnv )
 				{
-					if ( ! NetworkUtil.isRequestFromLocalhost( req ) &&
-					     this.isUpdateMethod( param.serviceMethod ) )
+					if ( ! isRequestFromLocalhost && isUpdateMethod )
 					{
+						console.log( `|||||| will publish rpcMessage to P2P network` );
 						await param.http.p2pRelay.publish( rpcMessage );
 					}
 				}
