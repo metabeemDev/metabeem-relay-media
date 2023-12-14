@@ -40,10 +40,12 @@ export class BaseP2pRelay
 
 	constructor( topic )
 	{
-		if ( _.isString( topic ) && ! _.isEmpty( topic ) )
+		if ( ! _.isString( topic ) || _.isEmpty( topic ) )
 		{
-			this.subTopic = topic;
+			throw new Error( `${ this.constructor.name }.constructor :: invalid topic` );
 		}
+
+		this.subTopic = topic;
 	}
 
 	async start( callbackBroadcast )
@@ -75,39 +77,42 @@ export class BaseP2pRelay
 					.setPort( p2p_port )
 					.setAnnounceAddresses( [] )
 					.setBootstrapperAddresses( p2p_bootstrappers )
-					//.setPubsubPeerDiscoveryTopics( [] )
+					.setPubsubPeerDiscoveryTopics( [] )
 					.build();
 				await this.relayService.createRelay( this.relayOptions );
 				await this.relayService.subscribe( this.subTopic, ( data ) =>
 				{
+					console.log( `|||||| received a subscribed message @${ this.constructor.name }` );
 					if ( _.isFunction( callbackBroadcast ) )
 					{
 						callbackBroadcast( data );
 					}
 				} );
 
-				//	...
-				setTimeout( () =>
-				{
-					//console.log( `${ chalk.cyan( 'Waiting for network connection to be ready' ) } ` );
-					console.log( `Waiting for network connection to be ready` );
+				this.printNetworkInfo();
 
-					// await TimerUtil.waitUntilCondition( () =>
-					// {
-					// 	const report = this.relayService.checkHealth( this.subTopic );
-					// 	if ( null !== report.errors )
-					// 	{
-					// 		console.log( `[${ new Date().toLocaleString() }] ${ chalk.bgYellow( 'WAITING : ' ) }`, report );
-					// 		return false;
-					// 	}
-					//
-					// 	return true;
-					// }, 1000 );
-					//console.log( `${ chalk.cyan( 'Network connection is ready :)' ) } ` );
-					console.log( `Network connection is ready :)` );
-					this.printNetworkInfo();
-
-				}, 1000 );
+				// //	...
+				// setTimeout( () =>
+				// {
+				// 	//console.log( `${ chalk.cyan( 'Waiting for network connection to be ready' ) } ` );
+				// 	console.log( `Waiting for network connection to be ready` );
+				//
+				// 	// await TimerUtil.waitUntilCondition( () =>
+				// 	// {
+				// 	// 	const report = this.relayService.checkHealth( this.subTopic );
+				// 	// 	if ( null !== report.errors )
+				// 	// 	{
+				// 	// 		console.log( `[${ new Date().toLocaleString() }] ${ chalk.bgYellow( 'WAITING : ' ) }`, report );
+				// 	// 		return false;
+				// 	// 	}
+				// 	//
+				// 	// 	return true;
+				// 	// }, 1000 );
+				// 	//console.log( `${ chalk.cyan( 'Network connection is ready :)' ) } ` );
+				// 	console.log( `Network connection is ready :)` );
+				// 	this.printNetworkInfo();
+				//
+				// }, 1000 );
 				//await TimerUtil.waitForDelay( 1000 );
 
 				//	...
@@ -137,7 +142,7 @@ export class BaseP2pRelay
 
 				//	return publishResult or undefined
 				const publishResult = await this.relayService.publish( this.subTopic, rpcMessage );
-				console.log( `|||||| ${ this.constructor.name }.publish :: publishResult :`, publishResult )
+				console.log( `|||||| p2p network publish result: `, publishResult );
 				resolve( publishResult );
 			}
 			catch ( err )
