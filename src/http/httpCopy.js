@@ -1,6 +1,12 @@
 import { HttpUtil } from "denetwork-utils";
 import denetwork_utils from "denetwork-utils";
 import _ from "lodash";
+import {
+	HttpUtilHeaderObject,
+	HttpUtilMethods,
+	HttpUtilMilliseconds,
+	HttpUtilProxy
+} from "denetwork-utils/src/utils/HttpUtil.js";
 const { HttpUtilOptions } = denetwork_utils;
 
 /**
@@ -48,9 +54,9 @@ export function httpCopy( http )
 				url : `http://127.0.0.1${ rpcMessage.httpPath }`,
 				method : rpcMessage.httpMethod,
 				data : rpcMessage.body,
-			}
+			};
 			const response = await HttpUtil.request( httpOptions );
-			console.log( `%%%%%% http.p2pRelay.p2pMediaPackagePool.subscribe response :`, response );
+			console.log( `%%%%%% resent the http request, response :`, response );
 		}
 		else
 		{
