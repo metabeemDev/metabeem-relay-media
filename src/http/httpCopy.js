@@ -30,32 +30,52 @@ export function httpCopy( http )
 	 */
 	http.p2pRelay.p2pMediaPackagePool.subscribe( async ( /** @type {string} **/ channel, /** @type {string} **/ message, /** @type {any} **/ options ) =>
 	{
-		console.log( `%%%%%% received a message from messageRequestPool :`, channel, message, options );
-		if ( _.isObject( message ) &&
-		     _.isObject( message.body ) )
+		try
 		{
-			/**
-			 * 	@type {RpcMessage}
-			 */
-			const rpcMessage = message.body;
-			const httpPort = ParamUtils.getHttpPort();
-			const url = `http://127.0.0.1:${ httpPort }${ rpcMessage.httpPath }`;
-
-			/**
-			 *	@type { HttpUtilOptions }
-			 */
-			const httpOptions = {
-				url : url,
-				method : rpcMessage.httpMethod,
-				data : rpcMessage.body,
-			};
-			console.log( `%%%%%% will resend the http request :`, httpOptions );
-			const response = await HttpUtil.request( httpOptions );
-			console.log( `%%%%%% resent the http request, response :`, response );
+			console.log( `%%%%%% received a message from messageRequestPool :`, channel, message, options );
+			if ( _.isObject( message ) &&
+			     _.isObject( message.body ) )
+			{
+				/**
+				 * 	@type {RpcMessage}
+				 */
+				await resentHttpRequest( message.body );
+			}
+			else
+			{
+				console.log( `%%%%%% message is not an object :`, message );
+			}
 		}
-		else
+		catch ( err )
 		{
-			console.log( `%%%%%% message is not an object :`, message );
+			console.error( `%%%%%% in httpCopy subscribe handler :`, err );
 		}
 	});
+}
+
+/**
+ * 	@param	rpcMessage	{RpcMessage}
+ * 	@returns {void}
+ */
+async function resentHttpRequest( rpcMessage )
+{
+	if ( ! rpcMessage )
+	{
+		throw new Error( `resentHttpRequest :: null rpcMessage` );
+	}
+
+	const httpPort = ParamUtils.getHttpPort();
+	const url = `http://127.0.0.1:${ httpPort }${ rpcMessage.httpPath }`;
+
+	/**
+	 *	@type { HttpUtilOptions }
+	 */
+	const httpOptions = {
+		url : url,
+		method : rpcMessage.httpMethod,
+		data : rpcMessage.body,
+	};
+	console.log( `%%%%%% will resend the http request :`, httpOptions );
+	const response = await HttpUtil.request( httpOptions );
+	console.log( `%%%%%% resent the http request, response :`, response );
 }
