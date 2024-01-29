@@ -21,7 +21,10 @@ export class BusinessControllers
 		}
 		catch ( err )
 		{
-			console.log( `###### BusinessControllers.all :`, err );
+			if ( ! TestUtil.isTestEnv() )
+			{
+				console.log( `###### BusinessControllers.all :`, err );
+			}
 			res.status( 400 ).send( NetworkUtil.getResponseObject( null, { error : err } ) );
 		}
 	}

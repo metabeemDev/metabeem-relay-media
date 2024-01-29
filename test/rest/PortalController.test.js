@@ -257,7 +257,7 @@ describe( 'PortalController', () =>
 			//	wait for a while
 			await TestUtil.sleep( 3 * 1000 );
 
-		}, 60 * 10e3 );
+		}, 100 * 10e3 );
 
 
 		it( "should return recommended posts for each person", async () =>

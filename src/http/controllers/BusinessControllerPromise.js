@@ -67,7 +67,10 @@ export class BusinessControllerPromise
 				// }
 
 				const host = NetworkUtil.getRequestHost( req );
-				console.log( `))) Http request host :`, host );
+				if ( ! TestUtil.isTestEnv() )
+				{
+					console.log( `))) Http request host :`, host );
+				}
 
 				//	...
 				const rpcMessage = RpcMessage.builder()
@@ -92,11 +95,10 @@ export class BusinessControllerPromise
 				const isRequestFromLocalhost = NetworkUtil.isRequestFromLocalhost( req );
 				const isUpdateMethod = this.isUpdateMethod( param.serviceMethod );
 				const isTestEnv = TestUtil.isTestEnv();
-				console.log( `))) isRequestFromLocalhost = ${ isRequestFromLocalhost }` );
-				console.log( `))) isUpdateMethod = ${ isUpdateMethod }` );
-				console.log( `))) isTestEnv = ${ isTestEnv }` );
 				if ( ! isTestEnv )
 				{
+					console.log( `))) isRequestFromLocalhost = ${ isRequestFromLocalhost }` );
+					console.log( `))) isUpdateMethod = ${ isUpdateMethod }` );
 					if ( ! isRequestFromLocalhost && isUpdateMethod )
 					{
 						console.log( `|||||| will publish rpcMessage to P2P network` );
@@ -109,7 +111,10 @@ export class BusinessControllerPromise
 			}
 			catch ( err )
 			{
-				console.log( `###### BusinessControllerPromise.process :`, err );
+				if ( ! TestUtil.isTestEnv() )
+				{
+					console.log( `###### BusinessControllerPromise.process :`, err );
+				}
 				reject( err );
 			}
 		});

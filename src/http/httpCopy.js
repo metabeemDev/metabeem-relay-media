@@ -1,7 +1,8 @@
 import _ from "lodash";
-import denetwork_utils from "denetwork-utils";
 import { ParamUtils } from "../utils/ParamUtils.js";
-const { HttpUtil, HttpUtilOptions } = denetwork_utils;
+import * as denetwork_utils from "denetwork-utils";
+//const { HttpUtil, HttpUtilOptions } = denetwork_utils;
+import { TestUtil, HttpUtil, HttpUtilOptions } from "denetwork-utils"
 
 /**
  *	http copy
@@ -11,6 +12,12 @@ const { HttpUtil, HttpUtilOptions } = denetwork_utils;
  */
 export function httpCopy( http )
 {
+	if ( TestUtil.isTestEnv() )
+	{
+		//	ignore httpCopy in test environment
+		return;
+	}
+
 	if ( ! http )
 	{
 		throw Error( `httpCopy :: invalid http` );

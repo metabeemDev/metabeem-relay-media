@@ -1,5 +1,6 @@
 import { RpcMessage } from "../models/RpcMessage.js";
 import { StoreService } from "./store/StoreService.js";
+import { TestUtil } from "denetwork-utils";
 
 /**
  * 	@class TransferService
@@ -37,7 +38,10 @@ export class TransferService
 			}
 			catch ( err )
 			{
-				console.log( `###### ${ this.constructor.name }.execute :`, err );
+				if ( ! TestUtil.isTestEnv() )
+				{
+					console.log( `###### ${ this.constructor.name }.execute :`, err );
+				}
 				reject( err );
 			}
 		});
