@@ -1,8 +1,8 @@
 import _ from "lodash";
 import { ParamUtils } from "../utils/ParamUtils.js";
 import * as denetwork_utils from "denetwork-utils";
-//const { HttpUtil, HttpUtilOptions } = denetwork_utils;
-import { TestUtil, HttpUtil, HttpUtilOptions } from "denetwork-utils"
+const { TestUtil, HttpUtil, HttpUtilOptions } = denetwork_utils;
+//import { TestUtil, HttpUtil, HttpUtilOptions } from "denetwork-utils"
 
 /**
  *	http copy

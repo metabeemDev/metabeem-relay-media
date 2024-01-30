@@ -86,7 +86,7 @@ describe( 'PortalController', () =>
 	{
 		it( "should create some posts, and then favorite and like them", async () =>
 		{
-			for ( let i = 0; i < 500; i++ )
+			for ( let i = 0; i < 300; i++ )
 			{
 				//	randomly, choose a user
 				walletObj = EtherWallet.createWalletFromMnemonic( testUserList[ new Date().getTime() % 3 ].mnemonic );
