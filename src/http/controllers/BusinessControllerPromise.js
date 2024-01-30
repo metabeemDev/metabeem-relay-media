@@ -3,7 +3,6 @@ import { RpcMessage, RpcMessageTypes } from "../../models/RpcMessage.js";
 import { MessageBody } from "../../models/MessageBody.js";
 import { TransferService } from "../../services/TransferService.js";
 import _ from "lodash";
-import { Network } from "ethers";
 import { NetworkUtil } from "../../utils/NetworkUtil.js";
 
 
@@ -31,7 +30,7 @@ export class BusinessControllerPromise
 		       [ 'add', 'update', 'updateFor', 'delete' ].includes( serviceMethod );
 	}
 
-	static process( param, req, res )
+	static process( param, req, _res )
 	{
 		return new Promise( async ( resolve, reject ) =>
 		{
