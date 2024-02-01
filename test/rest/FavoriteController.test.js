@@ -4,7 +4,7 @@ import { describe, expect } from "@jest/globals";
 import { EtherWallet, Web3Digester, Web3Signer } from "web3id";
 import { ethers } from "ethers";
 import { ERefDataTypes, SchemaUtil } from "denetwork-store";
-import { TestUtil } from "denetwork-utils";
+import { TestUtil, TypeUtil } from "denetwork-utils";
 
 let server = null;
 
@@ -237,6 +237,29 @@ describe( 'FavoriteController', () =>
 			expect( response._body.data.hash ).toBe( savedFavorite.hash );
 			expect( response._body.data.sig ).toBe( savedFavorite.sig );
 
+			//	check .refData
+			const item = response._body.data;
+			expect( item ).toHaveProperty( 'refType' );
+			expect( item ).toHaveProperty( 'refHash' );
+			expect( item.refHash ).not.toBeNull();
+			expect( TypeUtil.isString( item.refHash ) ).toBeTruthy();
+			expect( item.refHash.length ).toBeGreaterThan( 0 );
+
+			expect( item ).toHaveProperty( 'refData' );
+			if ( item.refData )
+			{
+				expect( item.refData ).not.toBeNull();
+				expect( item.refData ).toHaveProperty( 'hash' );
+				expect( item.refData.hash ).not.toBeNull();
+				expect( TypeUtil.isString( item.refData.hash ) ).toBeTruthy();
+				expect( item.refData.hash.length ).toBeGreaterThan( 0 );
+				expect( item.refData.hash ).toBe( item.refHash );
+			}
+			else
+			{
+				//	referred data may be deleted by its author
+			}
+
 		}, 60 * 10e3 );
 	} );
 
@@ -315,8 +338,28 @@ describe( 'FavoriteController', () =>
 					expect( item ).toBeDefined();
 					expect( item ).toHaveProperty( '_id' );
 					expect( item ).toHaveProperty( 'wallet' );
+
+					//	check .refData
 					expect( item ).toHaveProperty( 'refType' );
 					expect( item ).toHaveProperty( 'refHash' );
+					expect( item.refHash ).not.toBeNull();
+					expect( TypeUtil.isString( item.refHash ) ).toBeTruthy();
+					expect( item.refHash.length ).toBeGreaterThan( 0 );
+
+					expect( item ).toHaveProperty( 'refData' );
+					if ( item.refData )
+					{
+						expect( item.refData ).not.toBeNull();
+						expect( item.refData ).toHaveProperty( 'hash' );
+						expect( item.refData.hash ).not.toBeNull();
+						expect( TypeUtil.isString( item.refData.hash ) ).toBeTruthy();
+						expect( item.refData.hash.length ).toBeGreaterThan( 0 );
+						expect( item.refData.hash ).toBe( item.refHash );
+					}
+					else
+					{
+						//	referred data may be deleted by its author
+					}
 				}
 			}
 
@@ -478,6 +521,82 @@ describe( 'FavoriteController', () =>
 				expect( Array.isArray( response._body.data.list ) ).toBeTruthy();
 				expect( response._body.data.total ).toBeGreaterThan( 0 );
 				expect( response._body.data.total ).toBeGreaterThanOrEqual( response._body.data.list.length );
+
+				//console.log( response._body.data.list );
+				for ( const item of response._body.data.list )
+				{
+					//
+					//	console.log( `item :`, item );
+					//	item : {
+					//       _id: '65bc0c871c6395035bcc32e8',
+					//       timestamp: 1706822791990,
+					//       hash: '0x634ae711321a27ce969f880ffb88a7016d7bdcf9bd390a1636b87d231dcc8944',
+					//       version: '1.0.0',
+					//       deleted: '000000000000000000000000',
+					//       wallet: '0xc8f60eaf5988ac37a2963ac5fabe97f709d6b357',
+					//       sig: '0x7f3792d665ada781f1489f6031f06f0928c4336c3c680c04ddf26a7493d7a55d6c669ef840a062f8bd5f7b44b72b4f5c69616af0439e5b1a94402a1762973a951c',
+					//       refType: 'post',
+					//       refHash: '0xd6efbb68a83eacc872a7179edd0ff5dafe621ef4e88d7f0eb44b5ff02c4e1fbc',
+					//       refBody: 'ref body 49',
+					//       remark: 'no remark',
+					//       createdAt: '2024-02-01T21:26:31.990Z',
+					//       updatedAt: '2024-02-01T21:26:31.990Z',
+					//       __v: 0,
+					//       refData: {
+					//         _id: '65bc0c871c6395035bcc32e6',
+					//         timestamp: 1706822791982,
+					//         hash: '0xd6efbb68a83eacc872a7179edd0ff5dafe621ef4e88d7f0eb44b5ff02c4e1fbc',
+					//         version: '1.0.0',
+					//         deleted: '000000000000000000000000',
+					//         wallet: '0xc8f60eaf5988ac37a2963ac5fabe97f709d6b357',
+					//         bitcoinPrice: 25888,
+					//         sig: '0x9ac7837d4a0444035b9714b40e62719f54e13f97d473021fdd5a54fed3aa9a192d36f73daf8713406c88bac2e76219b80543fdbf6240e5ea84393e17e2eb795e1c',
+					//         contentType: 'original',
+					//         authorName: 'XING',
+					//         authorAvatar: 'https://avatars.githubusercontent.com/u/142800322?v=4',
+					//         body: 'Hello 1',
+					//         pictures: [],
+					//         videos: [],
+					//         statisticView: 0,
+					//         statisticRepost: 0,
+					//         statisticQuote: 0,
+					//         statisticLike: 0,
+					//         statisticFavorite: 1,
+					//         statisticReply: 0,
+					//         remark: 'no ...',
+					//         createdAt: '2024-02-01T21:26:31.982Z',
+					//         updatedAt: '2024-02-01T21:26:31.998Z',
+					//         __v: 0
+					//       }
+					//     }
+					//
+					expect( item ).toBeDefined();
+					expect( item ).not.toBeNull();
+					expect( item ).toHaveProperty( '_id' );
+					expect( item ).toHaveProperty( 'wallet' );
+
+					//	check .refData
+					expect( item ).toHaveProperty( 'refType' );
+					expect( item ).toHaveProperty( 'refHash' );
+					expect( item.refHash ).not.toBeNull();
+					expect( TypeUtil.isString( item.refHash ) ).toBeTruthy();
+					expect( item.refHash.length ).toBeGreaterThan( 0 );
+
+					expect( item ).toHaveProperty( 'refData' );
+					if ( item.refData )
+					{
+						expect( item.refData ).not.toBeNull();
+						expect( item.refData ).toHaveProperty( 'hash' );
+						expect( item.refData.hash ).not.toBeNull();
+						expect( TypeUtil.isString( item.refData.hash ) ).toBeTruthy();
+						expect( item.refData.hash.length ).toBeGreaterThan( 0 );
+						expect( item.refData.hash ).toBe( item.refHash );
+					}
+					else
+					{
+						//	referred data may be deleted by its author
+					}
+				}
 			}
 
 			//	wait for a while

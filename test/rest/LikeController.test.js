@@ -4,7 +4,7 @@ import { describe, expect } from "@jest/globals";
 import { EtherWallet, Web3Digester, Web3Signer } from "web3id";
 import { ethers } from "ethers";
 import { ERefDataTypes, SchemaUtil } from "denetwork-store";
-import { TestUtil } from "denetwork-utils";
+import { TestUtil, TypeUtil } from "denetwork-utils";
 
 let server = null;
 
@@ -213,6 +213,22 @@ describe( 'LikeController', () =>
 			expect( response._body.data.hash ).toBe( savedLike.hash );
 			expect( response._body.data.sig ).toBe( savedLike.sig );
 
+			const item = response._body.data;
+			expect( item ).toHaveProperty( 'refData' );
+			if ( item.refData )
+			{
+				expect( item.refData ).not.toBeNull();
+				expect( item.refData ).toHaveProperty( 'hash' );
+				expect( item.refData.hash ).not.toBeNull();
+				expect( TypeUtil.isString( item.refData.hash ) ).toBeTruthy();
+				expect( item.refData.hash.length ).toBeGreaterThan( 0 );
+				expect( item.refData.hash ).toBe( item.refHash );
+			}
+			else
+			{
+				//	referred data may be deleted by its author
+			}
+
 		}, 60 * 10e3 );
 
 		it( "should return a record by hash", async () =>
@@ -248,6 +264,22 @@ describe( 'LikeController', () =>
 			expect( response._body.data.hash ).toBe( savedLike.hash );
 			expect( response._body.data.sig ).toBe( savedLike.sig );
 
+			const item = response._body.data;
+			expect( item ).toHaveProperty( 'refData' );
+			if ( item.refData )
+			{
+				expect( item.refData ).not.toBeNull();
+				expect( item.refData ).toHaveProperty( 'hash' );
+				expect( item.refData.hash ).not.toBeNull();
+				expect( TypeUtil.isString( item.refData.hash ) ).toBeTruthy();
+				expect( item.refData.hash.length ).toBeGreaterThan( 0 );
+				expect( item.refData.hash ).toBe( item.refHash );
+			}
+			else
+			{
+				//	referred data may be deleted by its author
+			}
+
 		}, 60 * 10e3 );
 
 		it( "should return a record by refType and refHash", async () =>
@@ -282,6 +314,22 @@ describe( 'LikeController', () =>
 			expect( response._body.data.wallet ).toBe( walletObj.address );
 			expect( response._body.data.hash ).toBe( savedLike.hash );
 			expect( response._body.data.sig ).toBe( savedLike.sig );
+
+			const item = response._body.data;
+			expect( item ).toHaveProperty( 'refData' );
+			if ( item.refData )
+			{
+				expect( item.refData ).not.toBeNull();
+				expect( item.refData ).toHaveProperty( 'hash' );
+				expect( item.refData.hash ).not.toBeNull();
+				expect( TypeUtil.isString( item.refData.hash ) ).toBeTruthy();
+				expect( item.refData.hash.length ).toBeGreaterThan( 0 );
+				expect( item.refData.hash ).toBe( item.refHash );
+			}
+			else
+			{
+				//	referred data may be deleted by its author
+			}
 
 		}, 60 * 10e3 );
 	} );
@@ -354,15 +402,34 @@ describe( 'LikeController', () =>
 			expect( Array.isArray( response._body.data.list ) ).toBeTruthy();
 			expect( response._body.data.total ).toBeGreaterThan( 0 );
 			expect( response._body.data.total ).toBeGreaterThanOrEqual( response._body.data.list.length );
-			if ( response._body.data.list )
+
+			console.log( response._body.data.list )
+			for ( const item of response._body.data.list )
 			{
-				for ( const item of response._body.data.list )
+				expect( item ).toBeDefined();
+				expect( item ).toHaveProperty( '_id' );
+				expect( item ).toHaveProperty( 'wallet' );
+
+				//	check .refData
+				expect( item ).toHaveProperty( 'refType' );
+				expect( item ).toHaveProperty( 'refHash' );
+				expect( item.refHash ).not.toBeNull();
+				expect( TypeUtil.isString( item.refHash ) ).toBeTruthy();
+				expect( item.refHash.length ).toBeGreaterThan( 0 );
+
+				expect( item ).toHaveProperty( 'refData' );
+				if ( item.refData )
 				{
-					expect( item ).toBeDefined();
-					expect( item ).toHaveProperty( '_id' );
-					expect( item ).toHaveProperty( 'wallet' );
-					expect( item ).toHaveProperty( 'refType' );
-					expect( item ).toHaveProperty( 'refHash' );
+					expect( item.refData ).not.toBeNull();
+					expect( item.refData ).toHaveProperty( 'hash' );
+					expect( item.refData.hash ).not.toBeNull();
+					expect( TypeUtil.isString( item.refData.hash ) ).toBeTruthy();
+					expect( item.refData.hash.length ).toBeGreaterThan( 0 );
+					expect( item.refData.hash ).toBe( item.refHash );
+				}
+				else
+				{
+					//	referred data may be deleted by its author
 				}
 			}
 
@@ -527,8 +594,36 @@ describe( 'LikeController', () =>
 				expect( response._body.data ).toHaveProperty( 'list' );
 				expect( Array.isArray( response._body.data.list ) ).toBeTruthy();
 				expect( response._body.data.total ).toBeGreaterThan( 0 );
-				expect( response._body.data.total )
-					.toBeGreaterThanOrEqual( response._body.data.list.length );
+				expect( response._body.data.total ).toBeGreaterThanOrEqual( response._body.data.list.length );
+
+				for ( const item of response._body.data.list )
+				{
+					expect( item ).toBeDefined();
+					expect( item ).toHaveProperty( '_id' );
+					expect( item ).toHaveProperty( 'wallet' );
+
+					//	check .refData
+					expect( item ).toHaveProperty( 'refType' );
+					expect( item ).toHaveProperty( 'refHash' );
+					expect( item.refHash ).not.toBeNull();
+					expect( TypeUtil.isString( item.refHash ) ).toBeTruthy();
+					expect( item.refHash.length ).toBeGreaterThan( 0 );
+
+					expect( item ).toHaveProperty( 'refData' );
+					if ( item.refData )
+					{
+						expect( item.refData ).not.toBeNull();
+						expect( item.refData ).toHaveProperty( 'hash' );
+						expect( item.refData.hash ).not.toBeNull();
+						expect( TypeUtil.isString( item.refData.hash ) ).toBeTruthy();
+						expect( item.refData.hash.length ).toBeGreaterThan( 0 );
+						expect( item.refData.hash ).toBe( item.refHash );
+					}
+					else
+					{
+						//	referred data may be deleted by its author
+					}
+				}
 			}
 
 			//	wait for a while
