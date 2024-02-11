@@ -607,6 +607,7 @@ describe( 'PortalController', () =>
 				expect( Array.isArray( response._body.data.list ) ).toBeTruthy();
 				expect( response._body.data.list.length ).toBeGreaterThan( 0 );
 				expect( response._body.data.total ).toBeGreaterThan( 0 );
+				console.log( response._body );
 				expect( response._body.data.total ).toBeGreaterThanOrEqual( response._body.data.list.length );
 				if ( response._body.data.list )
 				{

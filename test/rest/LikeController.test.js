@@ -403,7 +403,7 @@ describe( 'LikeController', () =>
 			expect( response._body.data.total ).toBeGreaterThan( 0 );
 			expect( response._body.data.total ).toBeGreaterThanOrEqual( response._body.data.list.length );
 
-			console.log( response._body.data.list )
+			//console.log( response._body.data.list )
 			for ( const item of response._body.data.list )
 			{
 				expect( item ).toBeDefined();
