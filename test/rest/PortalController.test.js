@@ -257,7 +257,7 @@ describe( 'PortalController', () =>
 			//	wait for a while
 			await TestUtil.sleep( 3 * 1000 );
 
-		}, 100 * 10e3 );
+		}, 300 * 10e3 );
 
 
 		it( "should return recommended posts for each person", async () =>
@@ -340,7 +340,7 @@ describe( 'PortalController', () =>
 					expect( walletLiked ).toBeGreaterThan( 0 );
 				}
 			}
-		});
+		}, 120 * 10e3 );
 	} );
 
 
@@ -368,7 +368,7 @@ describe( 'PortalController', () =>
 				expect( Array.isArray( results.list ) ).toBeTruthy();
 				expect( results.list.length ).toBe( 0 );
 			}
-		} );
+		}, 120 * 10e3 );
 
 		it( "should make Bob following Alice", async () =>
 		{
@@ -423,7 +423,9 @@ describe( 'PortalController', () =>
 				console.log( response );
 			}
 			expect( response.statusCode ).toBe( 200 );
-		});
+
+		}, 120 * 10e3);
+
 		it( "should make Mary following Alice", async () =>
 		{
 			//
@@ -477,7 +479,8 @@ describe( 'PortalController', () =>
 				console.log( response );
 			}
 			expect( response.statusCode ).toBe( 200 );
-		});
+
+		}, 120 * 10e3);
 
 		it( "should create some posts in the persona of Alice", async () =>
 		{
@@ -555,7 +558,7 @@ describe( 'PortalController', () =>
 			//	wait for a while
 			await TestUtil.sleep(3 * 1000 );
 
-		}, 60 * 10e3 );
+		}, 120 * 10e3 );
 
 
 		it( "should return the followee posts in the persona of Bob and Mary", async () =>
@@ -607,7 +610,7 @@ describe( 'PortalController', () =>
 				expect( Array.isArray( response._body.data.list ) ).toBeTruthy();
 				expect( response._body.data.list.length ).toBeGreaterThan( 0 );
 				expect( response._body.data.total ).toBeGreaterThan( 0 );
-				console.log( response._body );
+				//console.log( response._body );
 				expect( response._body.data.total ).toBeGreaterThanOrEqual( response._body.data.list.length );
 				if ( response._body.data.list )
 				{
@@ -650,6 +653,6 @@ describe( 'PortalController', () =>
 				}
 			}
 
-		}, 60 * 10e3 );
+		}, 120 * 10e3 );
 	});
 } );

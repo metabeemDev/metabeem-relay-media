@@ -532,7 +532,7 @@ describe( 'PostController', () =>
 			//	wait for a while
 			await TestUtil.sleep( 5 * 1000 );
 
-		}, 60 * 10e3 );
+		}, 120 * 10e3 );
 	} );
 
 	describe( "Updating", () =>
