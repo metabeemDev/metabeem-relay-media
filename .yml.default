@@ -27,3 +27,9 @@ REDIS_DB: 0
 # throat checking interval in milliseconds
 THROAT_CHECKING_INTERVAL: 0
 
+
+#   apm
+SW_AGENT_NAME: metabeemRelayMedia
+SW_AGENT_INSTANCE_NAME: metabeemMedia
+SW_AGENT_COLLECTOR_BACKEND_SERVICES: 192.168.3.186:11800
+

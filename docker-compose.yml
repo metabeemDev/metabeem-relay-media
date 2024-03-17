@@ -7,11 +7,12 @@ services:
         build:
             context: .
         image: metabeem-relay-media:latest
+        restart: always
         ports:
             # 指定端口映射，类似 docker run 的 -p 选项，注意使用字符串形式
             # [local port]:[container port]
-            - "6612:6612"
-            - "9011:9011"
+            - "${HTTP_PORT}:${HTTP_PORT}"
+            - "${P2P_PORT}:${P2P_PORT}"
         extra_hosts:
             - "host.docker.internal:192.168.3.186"
             #- "host.docker.internal:192.168.0.96"
@@ -20,7 +21,8 @@ services:
             #- ./deploy/etc/hosts:/etc/hosts:ro
             #- ./deploy/etc/localtime:/etc/localtime:ro
             #- ./deploy/etc/timezone:/etc/timezone:ro
-
+        env_file:
+            - ./.env
 #        environment:
 #            - REDIS_HOST=redis
 #            - REDIS_PORT=6379

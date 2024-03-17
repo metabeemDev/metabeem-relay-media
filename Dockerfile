@@ -1,5 +1,10 @@
 FROM node:18.19.0
 
+# env variables
+ENV HTTP_PORT 6612
+ENV P2P_PORT 9011
+
+
 #   create configuration directory
 RUN mkdir /etc/denetwork/
 
@@ -16,8 +21,8 @@ RUN npm install
 COPY . .
 
 #   expose the ports used by the application
-EXPOSE 6612
-EXPOSE 9011
+EXPOSE ${HTTP_PORT}
+EXPOSE ${P2P_PORT}
 
 #   run application inside container
 CMD [ "node", "src/main.js" ]
