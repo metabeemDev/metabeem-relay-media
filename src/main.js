@@ -12,16 +12,16 @@ async function asyncMain()
 	/**
 	 * 	install SkyWalking anent
 	 */
-	assert.strictEqual( true, _.isString( process.env.SW_AGENT_NAME ) && ! _.isEmpty( process.env.SW_AGENT_NAME ) );
-	assert.strictEqual( true, _.isString( process.env.SW_AGENT_INSTANCE_NAME ) && ! _.isEmpty( process.env.SW_AGENT_INSTANCE_NAME ) );
-	assert.strictEqual( true, _.isString( process.env.SW_AGENT_COLLECTOR_BACKEND_SERVICES ) && ! _.isEmpty( process.env.SW_AGENT_COLLECTOR_BACKEND_SERVICES ) );
-	const agentInstance = agent.hasOwnProperty( 'default' ) ? agent.default : agent;
-	agentInstance.start({
-		serviceName: process.env.SW_AGENT_NAME,
-		serviceInstance: process.env.SW_AGENT_INSTANCE_NAME,
-		collectorAddress: process.env.SW_AGENT_COLLECTOR_BACKEND_SERVICES,
-		authorization: ""
-	});
+	// assert.strictEqual( true, _.isString( process.env.SW_AGENT_NAME ) && ! _.isEmpty( process.env.SW_AGENT_NAME ) );
+	// assert.strictEqual( true, _.isString( process.env.SW_AGENT_INSTANCE_NAME ) && ! _.isEmpty( process.env.SW_AGENT_INSTANCE_NAME ) );
+	// assert.strictEqual( true, _.isString( process.env.SW_AGENT_COLLECTOR_BACKEND_SERVICES ) && ! _.isEmpty( process.env.SW_AGENT_COLLECTOR_BACKEND_SERVICES ) );
+	// const agentInstance = agent.hasOwnProperty( 'default' ) ? agent.default : agent;
+	// agentInstance.start({
+	// 	serviceName: process.env.SW_AGENT_NAME,
+	// 	serviceInstance: process.env.SW_AGENT_INSTANCE_NAME,
+	// 	collectorAddress: process.env.SW_AGENT_COLLECTOR_BACKEND_SERVICES,
+	// 	authorization: ""
+	// });
 
 	/**
 	 *	start relay
