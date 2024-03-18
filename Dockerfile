@@ -11,6 +11,9 @@ RUN mkdir /etc/denetwork/
 #   create a working directory inside the container
 WORKDIR /usr/src/app
 
+#   install pm2
+RUN npm install -g pm2
+
 #   copy the local package.json to the container
 COPY package.json ./
 
@@ -25,4 +28,6 @@ EXPOSE ${HTTP_PORT}
 EXPOSE ${P2P_PORT}
 
 #   run application inside container
-CMD [ "node", "src/main.js" ]
+#CMD [ "node", "src/main.js" ]
+#CMD [ "pm2-runtime", "src/main.js" ]
+CMD [ "sh", "-c", "pm2-docker start src/main.js && pm2-docker status" ]
