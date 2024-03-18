@@ -28,6 +28,6 @@ EXPOSE ${HTTP_PORT}
 EXPOSE ${P2P_PORT}
 
 #   run application inside container
-#CMD [ "node", "src/main.js" ]
-CMD [ "pm2-docker", "src/main.js" ]
+CMD [ "node", "src/main.js" ]
+#CMD [ "pm2-docker", "src/main.js" ]
 #CMD [ "sh", "-c", "pm2-docker start src/main.js && pm2-docker status" ]
